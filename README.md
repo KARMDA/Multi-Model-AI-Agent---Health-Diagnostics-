@@ -51,7 +51,7 @@ The application runs on a **LangGraph** pipeline, where data floats through a se
 ```mermaid
 graph TD
     Start[User Upload] --> Ingest[Ingest & OCR Node]
-    Ingest --> Extract[Extract Parameters (LLM/Heuristic)]
+    Ingest --> Extract["Extract Parameters (LLM/Heuristic)"]
     
     Extract --> Validate[Validate & Standardize Node]
     Validate --> Interpret[Model 1: Range Interpretation]
