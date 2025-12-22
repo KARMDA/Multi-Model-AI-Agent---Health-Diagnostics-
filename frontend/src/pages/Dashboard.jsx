@@ -43,7 +43,8 @@ export default function Dashboard({ user }) {
 
         try {
             // Call Python API directly
-            const response = await axios.post("http://localhost:8000/analyze", formData, {
+            const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+            const response = await axios.post(`${API_BASE}/analyze`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
                 timeout: 300000 // 5 minute timeout
             });

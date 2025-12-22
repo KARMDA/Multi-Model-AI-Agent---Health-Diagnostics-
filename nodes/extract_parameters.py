@@ -92,23 +92,132 @@ def extract_parameters_node(state):
     parser = PydanticOutputParser(pydantic_object=ExtractionOutput)
     
     prompt = f"""
-    Extract CBC blood test parameters and patient info from the following OCR text.
-    
-    TEXT:
-    {text}
-    
-    RULES:
-    1. Extract ONLY the "Result" value. Do not extract Reference Range numbers!
-    2. Platelet Count Sanity Check:
-       - If the text says "20000" but the reference range is 150000+, reports sometimes omit the last zero or OCR misses it.
-       - IF the row says "Normal" but the value is 20,000, it is likely 200,000. Extract 200000.
-       - IF the row says "Low" or has no flag, trust the 20,000.
-    3. Formatting:
-       - "1.5 lakhs" -> 150000.
-       - "4.5 million" -> 4.5.
-    4. If a value is missing, return null.
-    
-    {parser.get_format_instructions()}
+        You are a medical data extraction engine specialized in CBC (Complete Blood Count) reports.
+        Your task is STRICT STRUCTURED EXTRACTION — NOT interpretation, NOT diagnosis.
+
+        The output MUST strictly follow the provided Pydantic schema.
+
+        INPUT:
+        Raw OCR text extracted from a blood report.
+        The text may contain:
+        - OCR errors
+        - Misaligned columns
+        - Reference ranges
+        - Units in different formats
+        - Percent and absolute values together
+        - Regional number formats (Indian, US, EU)
+        {text}
+
+        ====================
+        GLOBAL EXTRACTION RULES (MANDATORY)
+        ====================
+
+        1. RESULT-ONLY RULE
+        - Extract ONLY the actual patient RESULT value for each parameter.
+        - DO NOT extract:
+        - Reference range values
+        - Column headers
+        - Unit-only numbers
+        - Methodology text
+        - If multiple numbers appear in the same row:
+        - Choose the number that represents the patient result,
+            not the reference range.
+
+        2. UNIT AWARENESS & DISAMBIGUATION (CRITICAL)
+        - Identify whether a value represents:
+        - Percentage (%)
+        - Absolute count (×10³/µL, ×10⁹/L, cells/mm³, /cumm)
+        - NEVER treat absolute counts as percentages or vice versa.
+
+        - If both % and absolute values appear:
+        - Store percentage in the main field (e.g., Neutrophils)
+        - Store absolute count ONLY if a dedicated absolute field exists
+        - Otherwise, IGNORE the absolute value
+
+        3. DO NOT INFER OR CORRECT VALUES
+        - Do NOT apply medical judgment.
+        - Do NOT validate whether a value is normal or abnormal.
+        - Do NOT infer LOW/HIGH from numeric intuition.
+
+        4. FLAG HANDLING
+        - If the report explicitly shows a flag (LOW, HIGH, NORMAL, BORDERLINE, CRITICAL),
+        extract ONLY the RESULT value — NOT the flag.
+        - Flags are NOT part of this extraction schema.
+
+        5. PLATELET COUNT SANITY RULE (OCR-SPECIFIC)
+        - If Platelet Count appears between 10000–30000 AND:
+        - The reference range lower bound is ≥150000
+        - AND the row is marked NORMAL or has no LOW/CRITICAL indication
+        → Assume OCR missed a zero → multiply by 10
+        (e.g., 20000 → 200000)
+        - If Platelet Count is flagged LOW or CRITICAL:
+        → Trust the extracted value as-is
+
+        6. NUMBER NORMALIZATION
+        - Normalize textual numbers:
+        - "1.5 lakhs" → 150000
+        - "2 lakh" → 200000
+        - "4.5 million" → 4.5
+        - Normalize separators:
+        - "1,50,000" → 150000
+        - "4,50,000" → 450000
+        - Handle decimal commas ONLY when context clearly indicates decimals:
+        - "4,5" → 4.5
+
+        7. MISSING OR AMBIGUOUS DATA
+        - If a parameter is listed but the value is missing, unreadable,
+        or cannot be confidently identified → return null.
+        - Never guess.
+
+        8. PATIENT DEMOGRAPHICS
+        - Extract Patient Name, Age, and Gender ONLY if explicitly present.
+        - Do NOT infer gender from name.
+        - Age may be numeric or text (e.g., "28 Years").
+
+        ====================
+        PARAMETERS TO EXTRACT
+        ====================
+
+        CBC Parameters:
+        - Hemoglobin
+        - RBC
+        - PCV
+        - MCV
+        - MCH
+        - MCHC
+        - RDW
+        - WBC
+        - Platelets
+        - ESR
+        - MPV
+        - PDW
+        - PCT
+
+        Differential (PERCENT ONLY unless absolute field exists):
+        - Neutrophils
+        - Lymphocytes
+        - Eosinophils
+        - Monocytes
+        - Basophils
+
+        Patient Info:
+        - PatientName
+        - Age
+        - Gender
+
+        ====================
+        OUTPUT REQUIREMENTS
+        ====================
+
+        - Output MUST be valid JSON.
+        - Output MUST strictly match the Pydantic schema.
+        - Use null for missing values.
+        - Do NOT add explanations, comments, or extra fields.
+
+        ====================
+        FINAL OUTPUT FORMAT
+        ====================
+        {parser.get_format_instructions()}
     """
     
     extracted = {}

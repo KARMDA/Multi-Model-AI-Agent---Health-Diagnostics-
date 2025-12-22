@@ -47,6 +47,8 @@ def model3_context_node(state):
     Provide a brief contextual analysis. 
     If age/gender is unknown, provide general guidance on how these factors usually influence interpretation for the identified patterns.
     
+    IMPORTANT: Limit your analysis to 5-10 sentences max. Be extremely concise.
+    
     {parser.get_format_instructions()}
     """
 

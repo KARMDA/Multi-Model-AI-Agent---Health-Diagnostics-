@@ -40,7 +40,7 @@ def synthesis_node(state):
     Write a clear, professional summary for the patient (layperson friendly but medically accurate).
     
     FORMATTING RULES (STRICT):
-    1. Be CONCISE. limit the report to the most essential information.
+    1. Be CONCISE. The entire report should be brief and to the point. Limit the report to the most essential information.
     2. Do NOT use markdown headers (like # or ##). Instead, use **Bold Text** for section titles.
     3. Do NOT use horizontal rules (---) or separators.
     4. Structure the content logically using paragraphs.

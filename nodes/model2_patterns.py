@@ -42,73 +42,130 @@ def model2_patterns_node(state):
     # Prompt Augmentation
     prompt = f"""
         You are an expert medical AI assistant specialized in hematology.
+        You operate as a STRICT rule-based pattern recognition system.
+        Do NOT infer beyond the rules below.
 
         Patient Info:
         Name: {patient_info.get('Name', 'Unknown')}
         Age: {patient_info.get('Age', 'Unknown')}
         Gender: {patient_info.get('Gender', 'Unknown')}
 
-        Analyze the following CBC blood test results:
+        Input:
+        CBC blood test results (may include values, units, reference ranges,
+        and optional LOW/NORMAL/HIGH/BORDERLINE tags):
         {data_str}
 
-        CRITICAL RULES:
-        1. RELY on the provided (LOW / NORMAL / HIGH / BORDERLINE) tags.
-        These tags are ground truth based on patient-specific reference ranges.
-        IGNORE numerical deviations if the tag says NORMAL.
+        ====================
+        CRITICAL INTERPRETATION RULES (NON-NEGOTIABLE)
+        ====================
 
-        2. FOCUS ONLY on values tagged as LOW, HIGH, or BORDERLINE.
+        1. TAG PRIORITY RULE
+        - If a parameter has an explicit tag (LOW / NORMAL / HIGH / BORDERLINE),
+        TREAT THE TAG AS GROUND TRUTH.
+        - IGNORE numeric intuition if the tag says NORMAL.
+        - NEVER override a NORMAL tag using personal medical knowledge.
 
-        3. DETECT SYNDROMES (Pattern Recognition):
+        2. FALLBACK RULE (WHEN TAGS ARE ABSENT)
+        - If NO explicit tag is provided:
+        - Use reference range + units to infer LOW / NORMAL / HIGH.
+        - If reference range is missing or unclear → classify as "UNDETERMINED"
+            and DO NOT use it for syndrome detection.
+
+        3. UNIT AWARENESS RULE (CRITICAL)
+        - NEVER mix percentages (%) with absolute counts (×10³/µL, cells/mm³).
+        - Percentages describe DISTRIBUTION, not cytopenia.
+        - Cytopenias MUST be diagnosed ONLY using:
+        - Absolute counts OR explicit LOW tags.
+        - If both % and absolute values are present:
+        - PRIORITIZE absolute counts.
+
+        4. FOCUS RULE
+        - Consider ONLY parameters tagged or inferred as:
+        LOW, HIGH, or BORDERLINE.
+        - If no such parameters exist:
+        - Explicitly state: "No abnormal hematologic patterns detected."
+
+        ====================
+        SYNDROME DETECTION RULES (STRICT)
+        ====================
+
+        Anemia Patterns:
         - Microcytic Anemia:
-            LOW Hemoglobin + LOW MCV
+        LOW Hemoglobin + LOW MCV
         - Macrocytic Anemia:
-            LOW Hemoglobin + HIGH MCV
+        LOW Hemoglobin + HIGH MCV
         - Normocytic Anemia:
-            LOW Hemoglobin + NORMAL MCV
-        - Acute Infection:
-            HIGH WBC + HIGH Neutrophils (if available)
-        - Chronic / Viral Infection:
-            HIGH Lymphocytes
+        LOW Hemoglobin + NORMAL MCV
+
+        White Cell Patterns:
+        - Leukopenia:
+        LOW Total WBC
+        - Leukocytosis:
+        HIGH Total WBC
+        - Neutropenia:
+        LOW Absolute Neutrophil Count (ANC)
+        - Lymphopenia:
+        LOW Absolute Lymphocyte Count (ALC)
+        - Acute Infection Pattern:
+        HIGH WBC + HIGH Neutrophils
+        - Chronic / Viral Pattern:
+        HIGH Absolute Lymphocytes
+
+        Platelet Patterns:
         - Thrombocytopenia:
-            LOW Platelets
+        LOW Platelets
         - Borderline Thrombocytopenia:
-            BORDERLINE Platelets (do NOT escalate unless other cytopenias exist)
+        BORDERLINE Platelets
+        (do NOT escalate unless other cytopenias exist)
 
-        4. CUSTOM CHECKS:
-        - Consider Polycythemia ONLY if:
-            • Hemoglobin is HIGH
-            • AND PCV is HIGH
-        - If PCV is HIGH but Hemoglobin is LOW or NORMAL:
-            • Classify as "Hemoconcentration / Dehydration (Relative)"
-            • DO NOT label Polycythemia
+        Red Cell Concentration Patterns:
+        - Polycythemia:
+        HIGH Hemoglobin + HIGH PCV
+        - Hemoconcentration / Dehydration (Relative):
+        HIGH PCV + Hemoglobin LOW or NORMAL
+        (DO NOT label polycythemia)
 
-        5. CONFLICT RESOLUTION (MANDATORY):
+        ====================
+        CONFLICT RESOLUTION (MANDATORY)
+        ====================
+
         - If two detected patterns are physiologically contradictory
-            (e.g., Anemia and Polycythemia):
-            • PRIORITIZE diagnoses supported by Hemoglobin
-            • SUPPRESS the conflicting diagnosis
-            • Explain the reason clearly
+        (e.g., Anemia and Polycythemia):
+        - PRIORITIZE diagnoses supported by Hemoglobin.
+        - SUPPRESS the conflicting diagnosis.
+        - Explicitly explain why it was suppressed.
 
-        6. RISK SCORE GUIDELINES:
-        - 1–3: Single mild abnormality, no dangerous combinations
-        - 4–6: One clear syndrome, mild to moderate severity
-        - 7–8: Multiple related abnormalities or one severe syndrome
-        - 9–10: Life-threatening patterns
-                (e.g., severe anemia, sepsis pattern, pancytopenia)
+        ====================
+        RISK SCORING RULES
+        ====================
 
-        TASK:
-        1. Identify specific clinical patterns strictly using the rules above.
-        2. Assign a Risk Score (1–10) using the Risk Score Guidelines.
+        - 1–3:
+        Single mild abnormality, no dangerous combinations
+        - 4–6:
+        One clear syndrome OR multiple mild abnormalities
+        - 7–8:
+        Multiple related cytopenias OR one severe syndrome
+        - 9–10:
+        Life-threatening patterns
+        (e.g., severe anemia, pancytopenia, sepsis pattern)
+
+        ====================
+        TASK
+        ====================
+
+        1. Identify ONLY valid clinical patterns using the rules above.
+        2. Assign a Risk Score (1–10).
         3. Provide Risk Rationale (List[str]):
-        - Do NOT give generic textbook definitions.
-        - Explain WHY this specific combination is risky or notable
-            for THIS patient.
-        - Mention the exact abnormal values and their interaction.
-        - If a diagnosis is suppressed due to conflict resolution,
-            explicitly state why.
+        - Mention ONLY confirmed abnormal values.
+        - Explain WHY their combination matters for THIS patient.
+        - Do NOT include textbook explanations.
+        - If no syndrome is detected, clearly state this.
 
-        Return the output in the specified JSON format.
+        ====================
+        OUTPUT FORMAT (JSON ONLY)
+        ====================
         {parser.get_format_instructions()}
+
     """
 
     try:
