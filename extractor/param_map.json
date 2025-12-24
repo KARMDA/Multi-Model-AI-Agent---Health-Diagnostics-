@@ -1,0 +1,351 @@
+{
+  "Hemoglobin": {
+    "param_id": "hemoglobin",
+    "aliases": ["hb", "hgb", "haemoglobin", "haemoglobin (g/l)", "hemoglobin (g/dl)", "hemoglobin g/dl", "hemoglobin g/l"],
+    "unit": "g/dL",
+    "range": { "min": 12.0, "max": 17.5, "units": "g/dL" },
+    "category": "hematology"
+  },
+  "Hematocrit": {
+    "param_id": "hematocrit",
+    "aliases": ["hct", "hematocrit", "packed cell volume", "pcv"],
+    "unit": "L/L",
+    "range": { "min": 0.37, "max": 0.50, "units": "L/L" },
+    "category": "hematology"
+  },
+  "RBC": {
+    "param_id": "rbc",
+    "aliases": ["rbc", "r.b.c", "red blood cells", "red cell count", "red blood cell count"],
+    "unit": "10^6/uL",
+    "range": { "min": 4.0, "max": 6.0, "units": "10^6/uL" },
+    "category": "hematology"
+  },
+  "WBC": {
+    "param_id": "wbc",
+    "aliases": ["wbc", "t.w.b.c", "white blood cells", "white cell count", "w.b.c"],
+    "unit": "10^3/uL",
+    "range": { "min": 4.0, "max": 11.0, "units": "10^3/uL" },
+    "category": "hematology"
+  },
+  "Platelets": {
+    "param_id": "platelets",
+    "aliases": ["platelet", "plt", "platelet count", "platelets (10^3/ul)"],
+    "unit": "10^3/uL",
+    "range": { "min": 150.0, "max": 450.0, "units": "10^3/uL" },
+    "category": "hematology"
+  },
+  "MCV": {
+    "param_id": "mcv",
+    "aliases": ["mcv", "mean cell volume", "mean corpuscular volume"],
+    "unit": "fL",
+    "range": { "min": 80.0, "max": 100.0, "units": "fL" },
+    "category": "hematology"
+  },
+  "MCH": {
+    "param_id": "mch",
+    "aliases": ["mch", "mean cell hemoglobin", "mean corpuscular hemoglobin"],
+    "unit": "pg",
+    "range": { "min": 26.0, "max": 34.0, "units": "pg" },
+    "category": "hematology"
+  },
+  "MCHC": {
+    "param_id": "mchc",
+    "aliases": ["mchc", "mean cell hemoglobin concentration", "mean corpuscular hemoglobin concentration"],
+    "unit": "g/dL",
+    "range": { "min": 31.0, "max": 36.0, "units": "g/dL" },
+    "category": "hematology"
+  },
+  "MPV": {
+    "param_id": "mpv",
+    "aliases": ["mpv", "mean platelet volume"],
+    "unit": "fL",
+    "range": { "min": 7.0, "max": 13.0, "units": "fL" },
+    "category": "hematology"
+  },
+  "Neutrophils": {
+    "param_id": "neutrophils",
+    "aliases": ["neutrophils", "neutrophil %", "neutrophil percent"],
+    "unit": "%",
+    "range": { "min": 40.0, "max": 70.0, "units": "%" },
+    "category": "differential"
+  },
+  "Lymphocytes": {
+    "param_id": "lymphocytes",
+    "aliases": ["lymphocytes", "lymphocyte %", "lymphocyte percent"],
+    "unit": "%",
+    "range": { "min": 20.0, "max": 40.0, "units": "%" },
+    "category": "differential"
+  },
+  "Monocytes": {
+    "param_id": "monocytes",
+    "aliases": ["monocytes", "monocyte %", "monocyte percent"],
+    "unit": "%",
+    "range": { "min": 2.0, "max": 8.0, "units": "%" },
+    "category": "differential"
+  },
+  "Eosinophils": {
+    "param_id": "eosinophils",
+    "aliases": ["eosinophils", "eosinophil %", "eosinophil percent"],
+    "unit": "%",
+    "range": { "min": 1.0, "max": 6.0, "units": "%" },
+    "category": "differential"
+  },
+  "Basophils": {
+    "param_id": "basophils",
+    "aliases": ["basophils", "basophil %", "basophil percent"],
+    "unit": "%",
+    "range": { "min": 0.0, "max": 1.0, "units": "%" },
+    "category": "differential"
+  },
+  "Glucose (Fasting)": {
+    "param_id": "glucose_fasting",
+    "aliases": ["glucose (fasting)", "glucose fasting", "fbs", "fasting blood sugar", "fasting glucose"],
+    "unit": "mg/dL",
+    "range": { "min": 70.0, "max": 99.0, "units": "mg/dL" },
+    "category": "metabolic"
+  },
+  "Glucose (PP)": {
+    "param_id": "glucose_pp",
+    "aliases": ["ppbs", "post prandial", "glucose (pp)", "postprandial glucose"],
+    "unit": "mg/dL",
+    "range": { "min": 70.0, "max": 140.0, "units": "mg/dL" },
+    "category": "metabolic"
+  },
+  "Random Glucose": {
+    "param_id": "glucose_random",
+    "aliases": ["random glucose", "rbs", "blood sugar random"],
+    "unit": "mg/dL",
+    "range": { "min": 70.0, "max": 160.0, "units": "mg/dL" },
+    "category": "metabolic"
+  },
+  "HbA1c": {
+    "param_id": "hba1c",
+    "aliases": ["hba1c", "hb a1c", "a1c", "hba1c (%)"],
+    "unit": "%",
+    "range": { "min": 4.0, "max": 5.6, "units": "%" },
+    "category": "metabolic"
+  },
+  "Total Cholesterol": {
+    "param_id": "total_cholesterol",
+    "aliases": ["cholesterol", "total cholesterol", "t cholesterol", "tc", "total chol"],
+    "unit": "mg/dL",
+    "range": { "min": 0.0, "max": 200.0, "units": "mg/dL" },
+    "category": "lipid"
+  },
+  "HDL Cholesterol": {
+    "param_id": "hdl",
+    "aliases": ["hdl", "hdl-c", "high density lipoprotein"],
+    "unit": "mg/dL",
+    "range": { "min": 40.0, "max": 60.0, "units": "mg/dL" },
+    "category": "lipid"
+  },
+  "LDL Cholesterol": {
+    "param_id": "ldl",
+    "aliases": ["ldl", "ldl-c", "low density lipoprotein"],
+    "unit": "mg/dL",
+    "range": { "min": 0.0, "max": 130.0, "units": "mg/dL" },
+    "category": "lipid"
+  },
+  "VLDL Cholesterol": {
+    "param_id": "vldl",
+    "aliases": ["vldl", "vldl-c", "very low density lipoprotein"],
+    "unit": "mg/dL",
+    "range": { "min": 5.0, "max": 40.0, "units": "mg/dL" },
+    "category": "lipid"
+  },
+  "Triglycerides": {
+    "param_id": "triglycerides",
+    "aliases": ["triglyceride", "tg", "triglycerides (mg/dl)"],
+    "unit": "mg/dL",
+    "range": { "min": 0.0, "max": 150.0, "units": "mg/dL" },
+    "category": "lipid"
+  },
+  "Creatinine": {
+    "param_id": "creatinine",
+    "aliases": ["creatinine", "serum creatinine", "cr", "creat"],
+    "unit": "mg/dL",
+    "range": { "min": 0.6, "max": 1.3, "units": "mg/dL" },
+    "category": "renal"
+  },
+  "Urea (BUN)": {
+    "param_id": "urea_bun",
+    "aliases": ["urea", "bun", "blood urea", "urea (mg/dl)"],
+    "unit": "mg/dL",
+    "range": { "min": 7.0, "max": 20.0, "units": "mg/dL" },
+    "category": "renal"
+  },
+  "Uric Acid": {
+    "param_id": "uric_acid",
+    "aliases": ["uric acid", "serum uric acid"],
+    "unit": "mg/dL",
+    "range": { "min": 3.0, "max": 7.0, "units": "mg/dL" },
+    "category": "renal"
+  },
+  "Albumin": {
+    "param_id": "albumin",
+    "aliases": ["albumin", "serum albumin"],
+    "unit": "g/dL",
+    "range": { "min": 3.5, "max": 5.0, "units": "g/dL" },
+    "category": "protein"
+  },
+  "Total Protein": {
+    "param_id": "total_protein",
+    "aliases": ["total protein", "proteins", "serum proteins"],
+    "unit": "g/dL",
+    "range": { "min": 6.0, "max": 8.3, "units": "g/dL" },
+    "category": "protein"
+  },
+  "AST (SGOT)": {
+    "param_id": "ast",
+    "aliases": ["ast", "sgot", "ast (u/l)"],
+    "unit": "U/L",
+    "range": { "min": 0.0, "max": 40.0, "units": "U/L" },
+    "category": "liver"
+  },
+  "ALT (SGPT)": {
+    "param_id": "alt",
+    "aliases": ["alt", "sgpt", "alanine transferase", "alanine aminotransferase", "alt (u/l)"],
+    "unit": "U/L",
+    "range": { "min": 0.0, "max": 45.0, "units": "U/L" },
+    "category": "liver"
+  },
+  "ALP": {
+    "param_id": "alp",
+    "aliases": ["alp", "alkaline phosphatase", "alkaline phosphatase (iu/l)"],
+    "unit": "U/L",
+    "range": { "min": 40.0, "max": 129.0, "units": "U/L" },
+    "category": "liver"
+  },
+  "GGT": {
+    "param_id": "ggt",
+    "aliases": ["ggt", "gamma gt", "gamma glutamyl transferase"],
+    "unit": "U/L",
+    "range": { "min": 10.0, "max": 71.0, "units": "U/L" },
+    "category": "liver"
+  },
+  "CK": {
+    "param_id": "ck",
+    "aliases": ["ck", "creatine kinase", "creatine phosphokinase", "cpk"],
+    "unit": "U/L",
+    "category": "muscle"
+  },
+  "eGFR": {
+    "param_id": "egfr",
+    "aliases": ["egfr", "estimated gfr", "estimated glomerular filtration rate"],
+    "unit": "mL/min/1.73m2",
+    "range": { "min": 60.0, "max": 120.0, "units": "mL/min/1.73m2" },
+    "category": "renal"
+  },
+  "Bilirubin Total": {
+    "param_id": "bilirubin_total",
+    "aliases": ["bilirubin", "total bilirubin", "bili total"],
+    "unit": "mg/dL",
+    "range": { "min": 0.1, "max": 1.2, "units": "mg/dL" },
+    "category": "liver"
+  },
+  "Bilirubin Direct": {
+    "param_id": "bilirubin_direct",
+    "aliases": ["direct bilirubin", "conjugated bilirubin"],
+    "unit": "mg/dL",
+    "range": { "min": 0.0, "max": 0.3, "units": "mg/dL" },
+    "category": "liver"
+  },
+  "Bilirubin Indirect": {
+    "param_id": "bilirubin_indirect",
+    "aliases": ["indirect bilirubin", "unconjugated bilirubin"],
+    "unit": "mg/dL",
+    "range": { "min": 0.1, "max": 1.0, "units": "mg/dL" },
+    "category": "liver"
+  },
+  "TSH": {
+    "param_id": "tsh",
+    "aliases": ["tsh", "tsh (mu/l)", "thyroid stimulating hormone"],
+    "unit": "µIU/mL",
+    "range": { "min": 0.4, "max": 4.0, "units": "µIU/mL" },
+    "category": "endocrine"
+  },
+  "Free T4": {
+    "param_id": "free_t4",
+    "aliases": ["free t4", "ft4"],
+    "unit": "ng/dL",
+    "range": { "min": 0.6, "max": 1.8, "units": "ng/dL" },
+    "category": "endocrine"
+  },
+  "Free T3": {
+    "param_id": "free_t3",
+    "aliases": ["free t3", "ft3"],
+    "unit": "pg/mL",
+    "range": { "min": 2.0, "max": 4.4, "units": "pg/mL" },
+    "category": "endocrine"
+  },
+  "Vitamin D (25-OH)": {
+    "param_id": "vitamin_d",
+    "aliases": ["vitamin d", "25-oh vitamin d", "25(oh)d", "vit d"],
+    "unit": "ng/mL",
+    "range": { "min": 20.0, "max": 50.0, "units": "ng/mL" },
+    "category": "vitamin"
+  },
+  "Vitamin B12": {
+    "param_id": "vitamin_b12",
+    "aliases": ["vitamin b12", "b12", "cobalamin"],
+    "unit": "pg/mL",
+    "range": { "min": 200.0, "max": 900.0, "units": "pg/mL" },
+    "category": "vitamin"
+  },
+  "CRP": {
+    "param_id": "crp",
+    "aliases": ["crp", "c-reactive protein", "crp (mg/l)"],
+    "unit": "mg/L",
+    "range": { "min": 0.0, "max": 5.0, "units": "mg/L" },
+    "category": "inflammation"
+  },
+  "ESR": {
+    "param_id": "esr",
+    "aliases": ["esr", "erythrocyte sedimentation rate"],
+    "unit": "mm/hr",
+    "range": { "min": 0.0, "max": 20.0, "units": "mm/hr" },
+    "category": "inflammation"
+  },
+  "Sodium": {
+    "param_id": "sodium",
+    "aliases": ["sodium", "na", "na+"],
+    "unit": "mmol/L",
+    "range": { "min": 135.0, "max": 145.0, "units": "mmol/L" },
+    "category": "electrolyte"
+  },
+  "Potassium": {
+    "param_id": "potassium",
+    "aliases": ["potassium", "k", "k+"],
+    "unit": "mmol/L",
+    "range": { "min": 3.5, "max": 5.0, "units": "mmol/L" },
+    "category": "electrolyte"
+  },
+  "Chloride": {
+    "param_id": "chloride",
+    "aliases": ["chloride", "cl", "cl-"],
+    "unit": "mmol/L",
+    "range": { "min": 98.0, "max": 107.0, "units": "mmol/L" },
+    "category": "electrolyte"
+  },
+  "Calcium": {
+    "param_id": "calcium",
+    "aliases": ["calcium", "ca", "serum calcium"],
+    "unit": "mg/dL",
+    "range": { "min": 8.5, "max": 10.5, "units": "mg/dL" },
+    "category": "electrolyte"
+  },
+  "Phosphorus": {
+    "param_id": "phosphorus",
+    "aliases": ["phosphorus", "phosphate"],
+    "unit": "mg/dL",
+    "range": { "min": 2.5, "max": 4.5, "units": "mg/dL" },
+    "category": "electrolyte"
+  },
+  "Magnesium": {
+    "param_id": "magnesium",
+    "aliases": ["magnesium", "mg"],
+    "unit": "mg/dL",
+    "range": { "min": 1.7, "max": 2.4, "units": "mg/dL" },
+    "category": "electrolyte"
+  }
+}

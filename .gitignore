@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+
+# Outputs (generated artifacts)
+outputs/
+model2/outputs/
+model1/outputs/
+debug/
+
+# Docker
+*.log
+.env
+
+# Archives
+*.zip
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+#temp files
+backups/
+bottemp/
+data/
+data;C/
+samples/
+temp/
+bot.txt
+project_for_review.zip
+structured_batch.model1_final.csv
+
