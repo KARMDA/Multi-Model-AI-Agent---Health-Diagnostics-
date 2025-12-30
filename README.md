@@ -1,15 +1,9 @@
 
-# 🧠 Multi-Model AI Agent for Automated Health Diagnostics (Medicube)
+# 🧠 Multi-Model AI Agent for Automated Health Diagnostics
 
 A **production-grade, research-oriented multi-model AI system** for automated blood report analysis.  
 The system integrates **OCR, deterministic clinical reasoning, knowledge-graph–based inference, and LLM-powered narrative synthesis** into a single, auditable pipeline, exposed via a **Streamlit UI** and packaged in a **single Docker image**.
 
-> ⚠️ **Medical Disclaimer**  
-> This platform is strictly an **assistive decision-support system** intended for educational and research use.  
-> It does **not** provide diagnoses, prescriptions, or treatment recommendations.  
-> All outputs must be reviewed by a qualified medical professional.
-
----
 
 ## ✨ Key Capabilities
 
