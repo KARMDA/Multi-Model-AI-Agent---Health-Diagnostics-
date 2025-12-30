@@ -1,13 +1,10 @@
-Model-3 supports HTTP-first (OLLAMA_URL) and CLI fallback (local ollama binary).
+Model-3 supports Gemini API and CLI fallback .
 
 Environment variables:
-- OLLAMA_URL: URL to Ollama HTTP API (http://host.docker.internal:11434)
-- MODEL3_MODEL_NAME: model name (e.g., mistral, phi)
-- MODEL3_TIMEOUT_SECONDS: HTTP timeout in seconds
-- MODEL3_MAX_TOKENS: max tokens for HTTP call
-- MODEL3_CLI_FALLBACK: "1" or "true" to enable local ollama CLI fallback
+-. env : GEMINI_API_KEY = apikey
+         GEMINI_MODEL = model
 
-Local (Windows) recommended workflow:
-- enable CLI fallback: set MODEL3_CLI_FALLBACK=1
-- ensure `ollama` is in PATH (installed locally)
-- run `python model3_runner.py --input /path/to/model2.json --out_dir /path/to/out`
+ I have used flash-2.5 as a default model       
+
+Deterministic Fallback:
+If for some reason like API error, The model diagnoses directly using knowledge graph used in model2, recommendeds based on deterministic rules and probability reasoning 
