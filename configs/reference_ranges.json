@@ -1,0 +1,134 @@
+{
+  "Hemoglobin": {
+    "units": ["g/dL", "g/L"],
+    "reference": {
+      "adult_male": { "low": 13.0, "high": 17.5 },
+      "adult_female": { "low": 12.0, "high": 15.5 }
+    }
+  },
+
+  "Total RBC count": {
+    "units": ["mill/cumm", "x10^6/uL", "x10^12/L"],
+    "reference": {
+      "adult_male": { "low": 4.5, "high": 5.9 },
+      "adult_female": { "low": 4.1, "high": 5.1 }
+    }
+  },
+
+  "Packed Cell Volume": {
+    "aliases": ["Hematocrit", "PCV", "HCT"],
+    "units": ["%", "L/L"],
+    "reference": {
+      "adult_male": { "low": 40, "high": 52 },
+      "adult_female": { "low": 36, "high": 48 }
+    }
+  },
+
+  "MCV": {
+    "units": ["fL"],
+    "reference": { "low": 80, "high": 100 }
+  },
+
+  "MCH": {
+    "units": ["pg"],
+    "reference": { "low": 27, "high": 33 }
+  },
+
+  "MCHC": {
+    "units": ["g/dL", "g/L"],
+    "reference": { "low": 32.0, "high": 36.0 }
+  },
+
+  "RDW": {
+    "units": ["%"],
+    "reference": { "low": 11.5, "high": 14.5 }
+  },
+
+  "Total WBC count": {
+    "aliases": ["TLC", "Leukocytes"],
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 4000, "high": 11000 }
+  },
+
+  "Platelet Count": {
+    "aliases": ["Platelets", "PLT"],
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 150000, "high": 450000 }
+  },
+
+  "Neutrophils": {
+    "units": ["%"],
+    "reference": { "low": 40, "high": 75 }
+  },
+
+  "Lymphocytes": {
+    "units": ["%"],
+    "reference": { "low": 20, "high": 45 }
+  },
+
+  "Monocytes": {
+    "units": ["%"],
+    "reference": { "low": 2, "high": 10 }
+  },
+
+  "Eosinophils": {
+    "units": ["%"],
+    "reference": { "low": 0, "high": 6 }
+  },
+
+  "Basophils": {
+    "units": ["%"],
+    "reference": { "low": 0, "high": 2 }
+  },
+
+  "Absolute Neutrophils": {
+    "aliases": ["ANC"],
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 1800, "high": 7800 }
+  },
+
+  "Absolute Lymphocytes": {
+    "aliases": ["ALC"],
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 1000, "high": 4800 }
+  },
+
+  "Absolute Monocytes": {
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 200, "high": 950 }
+  },
+
+  "Absolute Eosinophils": {
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 0, "high": 500 }
+  },
+
+  "Absolute Basophils": {
+    "units": ["cumm", "/uL", "x10^9/L"],
+    "reference": { "low": 0, "high": 200 }
+  },
+
+  "ESR": {
+    "units": ["mm/hr"],
+    "reference": {
+      "adult_male": { "low": 0, "high": 15 },
+      "adult_female": { "low": 0, "high": 20 }
+    }
+  },
+
+  "MPV": {
+    "units": ["fL"],
+    "reference": { "low": 7.0, "high": 12.0 }
+  },
+
+  "PDW": {
+    "units": ["%"],
+    "reference": { "low": 9.0, "high": 17.0 }
+  },
+
+  "PCT": {
+    "aliases": ["Plateletcrit"],
+    "units": ["%"],
+    "reference": { "low": 0.1, "high": 0.5 }
+  }
+}
