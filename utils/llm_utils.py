@@ -1,7 +1,10 @@
 from langchain_groq import ChatGroq
+import os
 
 # ⚠️ TEMPORARY FOR PROJECT DEMO
 GROQ_API_KEY = "your_api_key_here"
+'''or'''
+#GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 def get_llm():
     return ChatGroq(
