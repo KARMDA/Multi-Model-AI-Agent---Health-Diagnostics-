@@ -1,246 +1,140 @@
-# 🩺 Blood Report Analysis System
+# Blood Report Analysis System
 
-**Multi-Agent AI System for Automated Medical Report Processing with Phase-2 LLM Analysis**
+An AI-powered medical report analysis system that provides comprehensive blood work interpretation with intelligent insights and multi-report comparison capabilities.
 
-## 🌟 Features
+## Features
 
-- **📄 Multi-Format Support**: PDF, PNG, JPG, JPEG, CSV, JSON
-- **🤖 Multi-Agent Processing**: Specialized AI agents for different extraction scenarios
-- **🔬 Phase-1 Extraction**: Image-aware OCR with completeness guarantee
-- **🧠 Phase-2 AI Analysis**: Mistral 7B LLM for intelligent medical interpretation
-- **🛡️ Safety Guarantees**: Zero hallucination, local processing, medical disclaimers
-- **📊 ML-Ready Output**: Structured CSV for downstream AI models
-- **📋 Professional Reports**: Comprehensive medical report generation
+- **Advanced OCR Processing** - Extract text from PDF and image files with multiple preprocessing strategies
+- **Comprehensive Blood Analysis** - Parse 20+ blood parameters including CBC, differential counts, and chemistry panels
+- **Intelligent AI Assistant** - Goal-oriented AI that provides personalized health recommendations
+- **Multi-Report Comparison** - Track health trends across multiple reports over time
+- **Real-time Chat Interface** - Interactive Q&A about your blood work results
 
-## 🚀 Quick Start
+## Installation
 
-### 1. **Installation**
+1. Clone the repository:
 ```bash
-# Clone repository
 git clone <repository-url>
-cd Blood-Report-Analysis-System
+cd blood-report-analysis
+```
 
-# Create virtual environment
+2. Create a virtual environment:
+```bash
 python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# or
-.venv\Scripts\activate     # Windows
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
 
-# Install dependencies
+3. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. **Setup Phase-2 AI (Optional)**
+4. Install Tesseract OCR:
+   - **Windows**: Download from [GitHub releases](https://github.com/UB-Mannheim/tesseract/wiki)
+   - **macOS**: `brew install tesseract`
+   - **Linux**: `sudo apt-get install tesseract-ocr`
+
+5. Install Ollama (for AI features):
+   - Download from [ollama.ai](https://ollama.ai)
+   - Install Mistral model: `ollama pull mistral:instruct`
+
+## Usage
+
+1. Start the application:
 ```bash
-python setup_phase2.py
+python start_project.py
 ```
-
-### 3. **Run Application**
+Or run directly:
 ```bash
-# Option 1: Using the runner script (recommended)
-python run_app.py
-
-# Option 2: Direct Streamlit command
 streamlit run src/ui/UI.py
 ```
 
-### 4. **Access Web Interface**
-Open your browser to: **http://localhost:8501**
+2. Open your browser and navigate to `http://localhost:8501`
 
-## 📁 Project Structure
+3. Upload your blood report (PDF, PNG, JPG, or JSON format)
+
+4. View comprehensive analysis and chat with the AI assistant
+
+## Supported File Formats
+
+- **PDF files** - Scanned or digital blood reports
+- **Image files** - PNG, JPG, JPEG format medical reports  
+- **JSON files** - Structured medical data
+- **CSV files** - Tabular blood work data
+
+## Project Structure
 
 ```
-📦 Blood-Report-Analysis-System/
-├── 🚀 main.py                    # Main entry point
-├── 🚀 run_app.py                 # Application runner
-├── ⚙️ setup_phase2.py           # Phase-2 setup script
-├── 📋 requirements.txt          # Dependencies
-├── 📖 README.md                 # This file
-├── 📖 PROJECT_STRUCTURE.md      # Detailed structure docs
-│
-├── 📁 src/                      # Source code
-│   ├── 📁 core/                 # Core processing modules
-│   ├── 📁 phase1/               # Phase-1 extraction
-│   ├── 📁 phase2/               # Phase-2 AI analysis
-│   ├── 📁 utils/                # Utilities
-│   └── 📁 ui/                   # Web interface
-│
-├── 📁 config/                   # Configuration files
-├── 📁 data/                     # Sample data
-├── 📁 docs/                     # Documentation
-└── 📁 tests/                    # Test suite
+├── src/
+│   ├── core/           # Core analysis modules
+│   ├── ui/             # User interface components
+│   ├── utils/          # Utility functions
+│   ├── phase1/         # Basic extraction modules
+│   └── phase2/         # Advanced AI analysis
+├── config/             # Configuration files
+├── data/               # Sample data and test files
+├── docs/               # Documentation
+├── scripts/            # Setup and utility scripts
+└── tests/              # Test files
 ```
 
-## 🔧 System Architecture
+## Key Components
 
-### **Phase-1: Multi-Agent Extraction**
-- **OCR Engine**: Multi-format document processing
-- **Image Extractor**: Scanned image reconstruction
-- **Table Extractor**: Pure table data extraction
-- **Medical Validator**: Clinical parameter validation
+### Core Modules
+- **OCR Engine** - Multi-strategy text extraction from medical documents
+- **Blood Parser** - Comprehensive parameter extraction (20+ parameters)
+- **AI Agent** - Enhanced intelligence with goal-oriented workflows
+- **Multi-Report Manager** - Handle multiple reports with comparison analysis
 
-### **Phase-2: AI Analysis (Optional)**
-- **Model 1**: Parameter interpretation (Low/Normal/High)
-- **Model 2**: Pattern recognition & risk assessment
-- **Synthesis Engine**: Result aggregation
-- **Recommendation Generator**: Lifestyle guidance
+### Analysis Pipeline
+1. **Document Ingestion** - OCR processing with validation
+2. **Parameter Extraction** - Parse medical values, units, and reference ranges
+3. **Data Validation** - Ensure accuracy and completeness
+4. **Medical Interpretation** - Determine normal/abnormal status
+5. **AI Analysis** - Personalized insights and recommendations
 
-### **Safety Features**
-- **Schema Validation**: Never assumes CSV formats
-- **Zero Hallucination**: CSV is single source of truth
-- **Local Processing**: No data upload (Ollama)
-- **Medical Safety**: No diagnosis, mandatory disclaimers
+## Blood Parameters Supported
 
-## 📊 Usage Workflow
+### Complete Blood Count (CBC)
+- White Blood Cell (WBC), Red Blood Cell (RBC), Hemoglobin, Hematocrit
+- Mean Cell Volume (MCV), Mean Cell Hemoglobin (MCH), MCHC, RDW
+- Platelet Count, Mean Platelet Volume
 
-1. **Upload Report**: PDF, image, or structured data
-2. **Phase-1 Processing**: Multi-agent extraction with completeness guarantee
-3. **Phase-2 Analysis**: AI interpretation (if available)
-4. **View Results**: Professional medical report
-5. **Download**: Multiple formats (CSV, JSON, PDF)
+### Differential Count
+- Neutrophils, Lymphocytes, Monocytes, Eosinophils, Basophils
+- Both percentage and absolute counts
 
-## 🛠️ Configuration
+### Chemistry Panel
+- Glucose, Cholesterol, Creatinine, BUN, Liver enzymes
 
-### **Tesseract OCR Setup**
-```bash
-# Windows
-# Download from: https://github.com/UB-Mannheim/tesseract/wiki
-# Default path: C:\Program Files\Tesseract-OCR\tesseract.exe
+## AI Features
 
-# Linux
-sudo apt install tesseract-ocr
+- **Intent Recognition** - Understands user goals beyond literal questions
+- **Clarifying Questions** - Asks intelligent follow-ups for better assistance
+- **Context Memory** - Remembers conversation history and preferences
+- **Trend Analysis** - Identifies patterns across multiple reports
+- **Personalized Recommendations** - Tailored health advice based on results
 
-# macOS
-brew install tesseract
-```
-
-### **Phase-2 AI Setup**
-```bash
-# Install Ollama
-# Windows: Download from https://ollama.ai/download/windows
-# Linux: curl -fsSL https://ollama.ai/install.sh | sh
-# macOS: brew install ollama
-
-# Pull Mistral model
-ollama pull mistral:instruct
-
-# Start Ollama service
-ollama serve
-```
-
-## 🧪 Testing
-
-### **Run Test Suite**
-```bash
-python tests/test_phase2.py
-```
-
-### **Test Components**
-- ✅ Phase-2 requirements validation
-- ✅ CSV schema adaptation
-- ✅ LLM integration
-- ✅ Error handling scenarios
-
-## 📋 Sample Output
-
-### **Phase-1 Extraction**
-```csv
-test_name,value,unit,reference_range,method,raw_text
-Hemoglobin,12.5,g/dL,13.0-17.0,Calculated,Hemoglobin 12.5 g/dL
-RBC Count,4.2,million/µL,4.5-5.5,Electrical Impedance,RBC Count 4.2
-```
-
-### **Phase-2 AI Analysis**
-```
-**Phase-2 AI Analysis (Mistral)**
-Overall Status: Minor Concerns | Risk Level: Moderate
-Tests Analyzed: 8 | Abnormal: 2 | Patterns: 1
-
-Key Findings:
-• Hemoglobin: 12.5 g/dL (Low)
-• Total Cholesterol: 220 mg/dL (High)
-
-AI Recommendations:
-• Iron-rich diet with adequate nutrients
-• Regular cardiovascular exercise
-```
-
-## 🔒 Privacy & Security
-
-- **Local Processing**: All data stays on your machine
-- **No Internet Required**: After setup, works offline
-- **HIPAA Considerations**: Suitable for local medical data
-- **No Data Logging**: System doesn't store medical information
-
-## 🆘 Troubleshooting
-
-### **Common Issues**
-
-1. **"Tesseract not found"**
-   ```bash
-   # Check installation
-   tesseract --version
-   
-   # Set path in environment or code
-   export TESSERACT_PATH="/usr/bin/tesseract"
-   ```
-
-2. **"Phase-2 not available"**
-   ```bash
-   # Check Ollama status
-   curl http://localhost:11434/api/tags
-   
-   # Start Ollama service
-   ollama serve
-   ```
-
-3. **"Import errors"**
-   ```bash
-   # Use the runner script
-   python run_app.py
-   
-   # Or set PYTHONPATH
-   export PYTHONPATH="${PWD}/src:${PYTHONPATH}"
-   ```
-
-### **Performance Optimization**
-
-1. **Speed up OCR**
-   - Use higher resolution images
-   - Ensure good lighting and contrast
-   - Pre-process images (rotate, crop)
-
-2. **Improve AI Analysis**
-   - Ensure Ollama has sufficient RAM (8GB+)
-   - Use SSD storage for better model loading
-   - Close other applications during processing
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow the project structure guidelines
-4. Add tests for new functionality
-5. Commit changes (`git commit -m 'Add amazing feature'`)
-6. Push to branch (`git push origin feature/amazing-feature`)
-7. Open Pull Request
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## ⚠️ Medical Disclaimer
+## Disclaimer
 
-This system is for informational and research purposes only. It does not constitute medical advice, diagnosis, or treatment recommendations. Always consult qualified healthcare professionals for medical decisions.
+This tool is for informational purposes only and should not replace professional medical advice. Always consult with healthcare professionals for medical decisions and interpretations.
 
-## 🙏 Acknowledgments
+## Technical Requirements
 
-- **Tesseract OCR**: Google's open-source OCR engine
-- **Ollama**: Local LLM runtime
-- **Mistral AI**: Open-source language model
-- **Streamlit**: Web application framework
-- **OpenCV**: Computer vision library
-
----
-
-**Built with ❤️ for healthcare innovation**
+- Python 3.8+
+- Tesseract OCR
+- Ollama (optional, for AI features)
+- 4GB+ RAM recommended
+- Windows/macOS/Linux support
