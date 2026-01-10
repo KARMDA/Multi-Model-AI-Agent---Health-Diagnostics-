@@ -11,9 +11,8 @@ from .intent_inference_engine import IntentInferenceEngine, infer_user_intent
 from .clarifying_question_generator import ClarifyingQuestionGenerator, generate_clarifying_questions
 from .goal_oriented_workflow_manager import GoalOrientedWorkflowManager, create_goal_oriented_workflow
 from .advanced_context_manager import AdvancedContextManager, create_context_manager
-from .multi_report_manager import get_or_create_session
-from .multi_report_qa_assistant import create_multi_report_qa_assistant
 from .workflow_actions import create_workflow_actions
+from .qa_assistant import BloodReportQAAssistant
 
 
 class EnhancedAIAgent:
@@ -30,7 +29,7 @@ class EnhancedAIAgent:
         self.context_manager = create_context_manager(db_path)
         
         # Initialize workflow actions
-        self.workflow_actions = None  # Will be initialized when session starts
+        self.workflow_actions = create_workflow_actions(context_manager=self.context_manager)
         
         # Register action functions with workflow manager
         self._register_workflow_actions()
@@ -39,6 +38,7 @@ class EnhancedAIAgent:
         self.current_user_id = None
         self.current_session_id = None
         self.active_workflows = {}
+        self.analysis_data = {}  # Store current analysis data
         
         # Response generation settings
         self.response_style = {
@@ -51,32 +51,12 @@ class EnhancedAIAgent:
     def start_user_session(self, user_id: str = None, session_type: str = "analysis") -> str:
         """
         Start a new user session with full context initialization
-        
-        Args:
-            user_id: Optional user identifier
-            session_type: Type of session (analysis, comparison, consultation)
-            
-        Returns:
-            Session ID for tracking
         """
         # Start context manager session
         session_id = self.context_manager.start_session(user_id, session_type)
         
         self.current_user_id = self.context_manager.current_user_id
         self.current_session_id = session_id
-        
-        # Initialize multi-report session if needed
-        if session_type in ['analysis', 'comparison']:
-            self.multi_report_session = get_or_create_session()
-            
-            # Initialize workflow actions with proper dependencies
-            self.workflow_actions = create_workflow_actions(
-                multi_report_session=self.multi_report_session,
-                context_manager=self.context_manager
-            )
-            
-            # Re-register action functions with updated instances
-            self._register_workflow_actions()
         
         return session_id
     
@@ -155,19 +135,18 @@ class EnhancedAIAgent:
         # Get context from context manager
         context = self.context_manager.get_contextual_information()
         
-        # Add multi-report context if available
-        if hasattr(self, 'multi_report_session') and self.multi_report_session:
-            session_data = self.multi_report_session.get_all_reports()
-            context['multi_report_data'] = {
-                'report_count': len(session_data.get('reports', {})),
-                'analysis_results': len(session_data.get('analysis_results', {})),
-                'comparison_available': session_data.get('comparison_results') is not None,
-                'available_parameters': self._extract_available_parameters(session_data)
-            }
+        # Add analysis data if available
+        if hasattr(self, 'analysis_data') and self.analysis_data:
+            context['analysis_data'] = self.analysis_data
+            context['has_report'] = True
+        else:
+            context['has_report'] = False
         
         # Add additional context from UI or other sources
         if additional_context:
             context['additional_context'] = additional_context
+            if additional_context.get('reports_uploaded'):
+                context['has_report'] = True
         
         return context
     
@@ -177,84 +156,66 @@ class EnhancedAIAgent:
         confidence = intent_analysis.get('confidence', 0)
         clarification_needed = intent_analysis.get('clarification_needed', False)
         
-        # High priority: Clarification needed
-        if clarification_needed or confidence < 0.6:
-            return 'clarification_needed'
+        # Check if we have report data available
+        has_reports = context.get('has_report', False)
         
-        # Check if we have sufficient context for the intent
-        if primary_intent in ['analyze_report', 'compare_reports', 'trend_analysis']:
-            report_count = context.get('multi_report_data', {}).get('report_count', 0)
-            
-            if report_count == 0:
-                return 'context_gathering'
-            elif primary_intent == 'compare_reports' and report_count < 2:
-                return 'context_gathering'
-        
-        # High confidence and sufficient context - execute workflow
-        if confidence > 0.7:
-            return 'workflow_execution'
-        
-        # Medium confidence - provide direct answer with some workflow elements
-        if confidence > 0.5:
+        # If we have reports, prioritize direct answers
+        if has_reports:
+            if clarification_needed and confidence < 0.3:
+                return 'clarification_needed'
             return 'direct_answer'
         
-        # Low confidence - gather more context
-        return 'context_gathering'
+        # No reports loaded - check what user needs
+        if primary_intent in ['analyze_report']:
+            return 'context_gathering'
+        
+        # For general questions, try direct answer
+        if confidence > 0.4:
+            return 'direct_answer'
+        
+        # Only ask clarification for very ambiguous queries
+        if clarification_needed and confidence < 0.3:
+            return 'clarification_needed'
+        
+        return 'direct_answer'
     
     def _handle_clarification_request(self, message: str, intent_analysis: Dict, 
                                     context: Dict) -> Dict[str, Any]:
         """Handle requests that need clarification"""
-        # Generate clarifying questions
         clarification_result = self.question_generator.generate_clarifying_questions(
-            message, intent_analysis, context.get('multi_report_data', {})
+            message, intent_analysis, context.get('analysis_data', {})
         )
         
         questions = clarification_result.get('questions', [])
         
-        # Format response
-        response_message = "I'd like to better understand what you're looking for. "
-        
-        if len(questions) == 1:
-            response_message += f"Could you help me with this: {questions[0]['question']}"
-        elif len(questions) > 1:
-            response_message += "Could you help me with a few questions:\n\n"
-            for i, q in enumerate(questions[:3], 1):
-                response_message += f"{i}. {q['question']}\n"
+        if questions:
+            response_message = f"💭 {questions[0]['question']}"
         else:
-            response_message += "Could you provide more details about what specific information you'd like?"
+            response_message = "Could you tell me more about what you'd like to know?"
         
         return {
             'type': 'clarification_request',
             'message': response_message,
-            'questions': questions,
-            'intent_analysis': intent_analysis,
-            'suggested_actions': [
-                'Provide more specific details',
-                'Choose from suggested options',
-                'Ask a different question'
-            ]
+            'questions': questions[:1],
+            'intent_analysis': intent_analysis
         }
     
     def _handle_workflow_execution(self, message: str, intent_analysis: Dict, 
                                  context: Dict) -> Dict[str, Any]:
         """Handle requests that can be executed via workflows"""
         try:
-            # Create workflow
             workflow_id = self.workflow_manager.create_workflow_for_intent(
-                intent_analysis, context.get('multi_report_data', {})
+                intent_analysis, context.get('analysis_data', {})
             )
             
-            # Execute workflow
             workflow_results = self.workflow_manager.execute_workflow(
                 workflow_id, 
                 {
                     'user_message': message,
-                    'context': context,
-                    'multi_report_session': getattr(self, 'multi_report_session', None)
+                    'context': context
                 }
             )
             
-            # Save workflow execution to history
             workflow_status = self.workflow_manager.get_workflow_status(workflow_id)
             self.context_manager.save_workflow_execution(
                 workflow_id,
@@ -265,7 +226,6 @@ class EnhancedAIAgent:
                 (datetime.now() - datetime.fromisoformat(workflow_status.get('started_at', datetime.now().isoformat()))).total_seconds()
             )
             
-            # Format response based on workflow results
             response = self._format_workflow_response(
                 intent_analysis.get('primary_intent'), 
                 workflow_results, 
@@ -280,76 +240,93 @@ class EnhancedAIAgent:
         except Exception as e:
             return {
                 'type': 'workflow_error',
-                'message': f"I encountered an issue processing your request: {str(e)}. Let me try a different approach.",
-                'fallback_available': True,
-                'error_details': str(e)
+                'message': f"I encountered an issue: {str(e)}. Let me try a different approach.",
+                'fallback_available': True
             }
     
     def _handle_direct_answer(self, message: str, intent_analysis: Dict, 
                             context: Dict) -> Dict[str, Any]:
-        """Handle requests with direct answers using available data"""
+        """Handle requests with direct answers"""
         primary_intent = intent_analysis.get('primary_intent')
         
-        # Use multi-report Q&A assistant if available
-        if hasattr(self, 'multi_report_session') and self.multi_report_session:
-            reports_data = self.multi_report_session.analysis_results
-            comparison_data = self.multi_report_session.get_comparison_results()
-            
-            if reports_data:
-                qa_assistant = create_multi_report_qa_assistant(reports_data, comparison_data)
-                ai_response = qa_assistant.answer_question(message)
-                
-                return {
-                    'type': 'direct_answer',
-                    'message': ai_response,
-                    'source': 'ai_analysis',
-                    'intent': primary_intent,
-                    'confidence': intent_analysis.get('confidence'),
-                    'additional_actions': self._suggest_follow_up_actions(primary_intent, context)
-                }
+        # Generate helpful response
+        response = self._generate_helpful_response(message, intent_analysis, context)
         
-        # Fallback to general response
         return {
             'type': 'direct_answer',
-            'message': self._generate_general_response(message, intent_analysis, context),
+            'message': response,
             'source': 'general_knowledge',
-            'intent': primary_intent,
-            'suggestions': self._get_helpful_suggestions(primary_intent, context)
+            'intent': primary_intent
         }
+    
+    def _generate_helpful_response(self, message: str, intent_analysis: Dict, context: Dict) -> str:
+        """Generate helpful response for general health questions"""
+        message_lower = message.lower()
+        
+        # Food/diet recommendations
+        if any(word in message_lower for word in ['food', 'diet', 'eat', 'nutrition', 'meal']):
+            return """🍎 **General Healthy Eating Guidelines:**
+
+• **Fruits & Vegetables**: Aim for 5+ servings daily
+• **Whole Grains**: Choose brown rice, oats, whole wheat
+• **Lean Proteins**: Fish, chicken, beans, lentils
+• **Healthy Fats**: Olive oil, nuts, avocados
+• **Limit**: Processed foods, sugar, excess salt
+
+**For personalized recommendations based on your blood work**, please upload your blood report and I can suggest specific dietary changes based on your results.
+
+⚠️ *Always consult a healthcare provider or dietitian for personalized advice.*"""
+        
+        # Exercise recommendations
+        if any(word in message_lower for word in ['exercise', 'workout', 'fitness', 'physical']):
+            return """🏃 **General Exercise Guidelines:**
+
+• **Cardio**: 150 mins moderate or 75 mins vigorous per week
+• **Strength**: 2+ days per week for major muscle groups
+• **Flexibility**: Stretching or yoga regularly
+• **Start slow**: Gradually increase intensity
+
+**Upload your blood report** for exercise recommendations tailored to your health status.
+
+⚠️ *Consult your doctor before starting new exercise programs.*"""
+        
+        # Lifestyle recommendations
+        if any(word in message_lower for word in ['lifestyle', 'health', 'improve', 'better']):
+            return """💪 **General Health Tips:**
+
+• **Sleep**: 7-9 hours quality sleep
+• **Hydration**: 8+ glasses of water daily
+• **Stress**: Practice relaxation techniques
+• **Regular checkups**: Annual health screenings
+• **Avoid**: Smoking, excessive alcohol
+
+**For personalized advice**, upload your blood report for analysis.
+
+⚠️ *This is general guidance. Consult healthcare providers for personal advice.*"""
+        
+        # Default helpful response
+        return self._generate_general_response(message, intent_analysis, context)
     
     def _handle_context_gathering(self, message: str, intent_analysis: Dict, 
                                 context: Dict) -> Dict[str, Any]:
         """Handle requests that need more context"""
         primary_intent = intent_analysis.get('primary_intent')
         
-        if primary_intent in ['analyze_report', 'compare_reports']:
+        if primary_intent == 'analyze_report':
             return {
                 'type': 'context_request',
-                'message': "I'd be happy to help analyze your blood reports! Please upload your medical reports (PDF, image, or JSON format) to get started.",
+                'message': "I'd be happy to help analyze your blood report! Please upload your medical report (PDF, image, or JSON format) to get started.",
                 'required_context': 'blood_reports',
                 'upload_instructions': [
                     "Supported formats: PDF, PNG, JPG, JPEG, JSON, CSV",
-                    "Multiple reports can be uploaded for comparison",
                     "Ensure reports are clear and readable"
                 ],
                 'next_steps': [
-                    "Upload your report(s)",
+                    "Upload your report",
                     "I'll automatically extract and analyze the data",
                     "Ask questions about your results"
                 ]
             }
-        
-        elif primary_intent == 'compare_reports':
-            report_count = context.get('multi_report_data', {}).get('report_count', 0)
-            
-            if report_count == 1:
-                return {
-                    'type': 'context_request',
-                    'message': "I can see you have one report uploaded. To perform a comparison, please upload at least one more blood report from a different date.",
-                    'required_context': 'additional_reports',
-                    'current_status': f"Reports available: {report_count}",
-                    'needed': "At least 1 more report for comparison"
-                }
         
         return {
             'type': 'context_request',
@@ -392,19 +369,6 @@ class EnhancedAIAgent:
                 ]
             }
         
-        elif intent == 'compare_reports':
-            return {
-                'type': 'comparison_complete',
-                'message': "I've compared your blood reports and identified key trends:",
-                'results': workflow_results,
-                'insights': self._extract_comparison_insights(workflow_results),
-                'next_actions': [
-                    "Explore specific parameter trends",
-                    "Get recommendations based on changes",
-                    "Ask about concerning patterns"
-                ]
-            }
-        
         else:
             return {
                 'type': 'workflow_complete',
@@ -421,7 +385,7 @@ class EnhancedAIAgent:
             actions.extend([
                 "Ask about specific abnormal values",
                 "Get personalized health recommendations",
-                "Compare with previous reports"
+                "Learn about lifestyle changes"
             ])
         
         elif intent == 'health_advice':
@@ -437,10 +401,6 @@ class EnhancedAIAgent:
                 "Understand monitoring recommendations",
                 "Ask about follow-up testing"
             ])
-        
-        # Add context-specific actions
-        if context.get('multi_report_data', {}).get('comparison_available'):
-            actions.append("View trend analysis across reports")
         
         return actions[:3]  # Limit to top 3 suggestions
     
@@ -488,30 +448,6 @@ class EnhancedAIAgent:
         }
         
         return intent_specific.get(intent, base_suggestions)
-    
-    def _extract_comparison_insights(self, workflow_results: Dict) -> List[str]:
-        """Extract key insights from comparison workflow results"""
-        insights = []
-        
-        # This would analyze the workflow results and extract meaningful insights
-        # Simplified implementation for now
-        if 'trend_analysis' in workflow_results:
-            insights.append("Parameter trends have been identified across your reports")
-        
-        if 'risk_changes' in workflow_results:
-            insights.append("Changes in health risk factors detected")
-        
-        return insights
-    
-    def _extract_available_parameters(self, session_data: Dict) -> List[str]:
-        """Extract available parameters from session data"""
-        parameters = set()
-        
-        for report_data in session_data.get('analysis_results', {}).values():
-            validated_data = report_data.get('validated_data', {})
-            parameters.update(validated_data.keys())
-        
-        return list(parameters)
     
     def _update_user_preferences_from_interaction(self, intent_analysis: Dict, 
                                                 response: Dict, context: Dict):

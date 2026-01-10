@@ -13,20 +13,23 @@ class WorkflowActions:
     Collection of action functions that can be executed by workflows
     """
     
-    def __init__(self, multi_report_session=None, context_manager=None):
-        self.multi_report_session = multi_report_session
+    def __init__(self, context_manager=None):
         self.context_manager = context_manager
+        self.current_report_data = {}  # Store current report data
+    
+    def set_report_data(self, report_data: Dict[str, Any]):
+        """Set current report data for analysis"""
+        self.current_report_data = report_data
     
     # Data Retrieval Actions
     def get_user_reports(self, **kwargs) -> Dict[str, Any]:
         """Get user's available reports"""
-        if self.multi_report_session:
-            session_data = self.multi_report_session.get_all_reports()
+        if self.current_report_data:
             return {
                 'status': 'success',
-                'reports': session_data.get('reports', {}),
-                'analysis_results': session_data.get('analysis_results', {}),
-                'report_count': len(session_data.get('reports', {}))
+                'reports': {'current': self.current_report_data},
+                'analysis_results': {'current': self.current_report_data},
+                'report_count': 1
             }
         return {
             'status': 'no_reports',
@@ -622,6 +625,6 @@ class WorkflowActions:
 
 
 # Convenience function to create workflow actions
-def create_workflow_actions(multi_report_session=None, context_manager=None) -> WorkflowActions:
+def create_workflow_actions(context_manager=None) -> WorkflowActions:
     """Create workflow actions instance"""
-    return WorkflowActions(multi_report_session, context_manager)
+    return WorkflowActions(context_manager)
