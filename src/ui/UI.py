@@ -519,6 +519,7 @@ def perform_contextual_analysis(report_data, user_context):
     if 'Diabetes' in medical_history:
         history_insights.append("🩺 Diabetes History: Glucose monitoring critical")
         history_risk_modifier += 0.3
+        glucose_finding = f"Glucose: {glucose} mg/dL" if glucose else "Glucose level in report"
         if glucose:
             if glucose > 126:
                 history_insights.append("⚠️ Fasting glucose elevated - diabetes control needs attention")
@@ -527,17 +528,28 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Diabetes Management',
             'priority': 'High',
+            'traceability': {
+                'finding': f"Medical History: Diabetes + {glucose_finding}",
+                'risk': 'Elevated metabolic risk due to diabetes history',
+                'reasoning': f"Because you have diabetes history → blood sugar control is critical → regular monitoring prevents complications"
+            },
             'actions': ['Regular HbA1c monitoring every 3 months', 'Maintain blood sugar diary', 'Follow diabetic diet plan']
         })
     
     if 'Hypertension' in medical_history:
         history_insights.append("🩺 Hypertension History: Cardiovascular risk elevated")
         history_risk_modifier += 0.2
+        chol_finding = f"Cholesterol: {cholesterol} mg/dL" if cholesterol else "Cholesterol in report"
         if cholesterol and cholesterol > 200:
             history_insights.append("⚠️ High cholesterol + hypertension = increased heart disease risk")
         analysis['recommendations'].append({
             'category': 'Blood Pressure Management',
             'priority': 'High',
+            'traceability': {
+                'finding': f"Medical History: Hypertension + {chol_finding}",
+                'risk': 'Elevated cardiovascular risk due to hypertension',
+                'reasoning': f"Because you have hypertension → blood vessels under strain → sodium reduction and weight management reduce heart attack/stroke risk"
+            },
             'actions': ['Reduce sodium intake', 'Regular BP monitoring', 'Maintain healthy weight']
         })
     
@@ -547,16 +559,27 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Cardiac Care',
             'priority': 'High',
+            'traceability': {
+                'finding': "Medical History: Heart Disease",
+                'risk': 'High cardiovascular risk due to existing heart condition',
+                'reasoning': f"Because you have heart disease history → cardiac function compromised → regular monitoring and activity modification prevent cardiac events"
+            },
             'actions': ['Regular cardiac checkups', 'Monitor cholesterol and triglycerides', 'Avoid strenuous activity without clearance']
         })
     
     if 'Anemia' in medical_history:
         history_insights.append("🩺 Anemia History: Hemoglobin monitoring essential")
+        hb_finding = f"Current Hb: {hb} g/dL ({hb_status})" if hb else "Hemoglobin in report"
         if hb_status == 'LOW':
             history_insights.append("⚠️ Current low Hb confirms ongoing anemia - treatment needed")
         analysis['recommendations'].append({
             'category': 'Anemia Management',
             'priority': 'Medium',
+            'traceability': {
+                'finding': f"Medical History: Anemia + {hb_finding}",
+                'risk': 'Ongoing anemia risk based on history',
+                'reasoning': f"Because you have anemia history → prone to low hemoglobin → iron-rich diet and supplements maintain healthy blood levels"
+            },
             'actions': ['Iron-rich diet', 'Consider iron supplements', 'Identify and treat underlying cause']
         })
     
@@ -565,6 +588,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Thyroid Management',
             'priority': 'Medium',
+            'traceability': {
+                'finding': "Medical History: Thyroid Disorder",
+                'risk': 'Metabolic imbalance risk due to thyroid condition',
+                'reasoning': f"Because you have thyroid disorder → metabolism affected → regular TSH monitoring ensures proper medication dosing"
+            },
             'actions': ['Regular TSH testing', 'Medication compliance', 'Watch for fatigue/weight changes']
         })
     
@@ -574,6 +602,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Kidney Care',
             'priority': 'High',
+            'traceability': {
+                'finding': "Medical History: Kidney Disease",
+                'risk': 'Renal function decline risk',
+                'reasoning': f"Because you have kidney disease → filtration capacity reduced → monitoring creatinine/BUN and limiting protein prevents further damage"
+            },
             'actions': ['Monitor creatinine and BUN', 'Limit protein intake as advised', 'Stay hydrated']
         })
     
@@ -582,6 +615,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Liver Care',
             'priority': 'High',
+            'traceability': {
+                'finding': "Medical History: Liver Disease",
+                'risk': 'Hepatic function compromise risk',
+                'reasoning': f"Because you have liver disease → detoxification impaired → avoiding alcohol and monitoring enzymes prevents further liver damage"
+            },
             'actions': ['Avoid alcohol completely', 'Monitor liver enzymes', 'Hepatitis screening if not done']
         })
     
@@ -607,6 +645,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Smoking Cessation',
             'priority': 'High',
+            'traceability': {
+                'finding': "Lifestyle: Active Smoker",
+                'risk': 'Elevated cardiovascular, respiratory, and cancer risk',
+                'reasoning': f"Because you smoke → blood oxygen reduced, vessels damaged → quitting smoking dramatically reduces heart attack and lung disease risk"
+            },
             'actions': ['Consider smoking cessation program', 'Nicotine replacement therapy', 'Lung function screening']
         })
     
@@ -617,6 +660,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Alcohol Reduction',
             'priority': 'High',
+            'traceability': {
+                'finding': "Lifestyle: Heavy Alcohol Consumption",
+                'risk': 'Liver damage and blood cell production impairment',
+                'reasoning': f"Because you consume heavy alcohol → liver stressed, bone marrow affected → reducing intake prevents cirrhosis and anemia"
+            },
             'actions': ['Reduce alcohol intake', 'Liver function monitoring', 'Consider counseling']
         })
     elif alcohol == 'Moderate':
@@ -628,6 +676,11 @@ def perform_contextual_analysis(report_data, user_context):
         analysis['recommendations'].append({
             'category': 'Physical Activity',
             'priority': 'Medium',
+            'traceability': {
+                'finding': "Lifestyle: Sedentary (Low Physical Activity)",
+                'risk': 'Increased metabolic syndrome, obesity, and cardiovascular risk',
+                'reasoning': f"Because you have sedentary lifestyle → metabolism slows, weight gain likely → regular exercise improves heart health and blood sugar control"
+            },
             'actions': ['Start with 15-20 min daily walks', 'Gradually increase activity', 'Aim for 150 min/week moderate exercise']
         })
     elif exercise == 'Active':
@@ -637,19 +690,37 @@ def perform_contextual_analysis(report_data, user_context):
     if diet == 'High Fat/Sugar':
         lifestyle_insights.append("🍔 High Fat/Sugar Diet: Metabolic syndrome risk")
         lifestyle_risk_modifier += 0.2
+        diet_findings = "Lifestyle: High Fat/Sugar Diet"
         if glucose and glucose > 100:
             lifestyle_insights.append("⚠️ Diet contributing to elevated glucose")
+            diet_findings += f" + Glucose: {glucose} mg/dL"
         if cholesterol and cholesterol > 200:
             lifestyle_insights.append("⚠️ Diet contributing to elevated cholesterol")
+            diet_findings += f" + Cholesterol: {cholesterol} mg/dL"
         analysis['recommendations'].append({
             'category': 'Dietary Changes',
             'priority': 'High',
+            'traceability': {
+                'finding': diet_findings,
+                'risk': 'Elevated risk of diabetes, heart disease, and obesity',
+                'reasoning': f"Because your diet is high in fat/sugar → blood sugar spikes, cholesterol rises → switching to whole foods reduces diabetes and heart disease risk"
+            },
             'actions': ['Reduce processed foods', 'Increase fiber intake', 'Choose whole grains over refined']
         })
     elif diet == 'Vegetarian':
         lifestyle_insights.append("🥗 Vegetarian Diet: Monitor B12 and iron levels")
         if hb_status == 'LOW':
             lifestyle_insights.append("⚠️ Low Hb may be related to vegetarian diet - check B12/iron")
+            analysis['recommendations'].append({
+                'category': 'Vegetarian Nutrition',
+                'priority': 'Medium',
+                'traceability': {
+                    'finding': f"Lifestyle: Vegetarian Diet + Low Hemoglobin ({hb} g/dL)",
+                    'risk': 'Iron and B12 deficiency risk common in vegetarians',
+                    'reasoning': f"Because you follow vegetarian diet + have low Hb → plant iron less absorbable, B12 lacking → fortified foods and supplements prevent deficiency"
+                },
+                'actions': ['Include fortified cereals and plant milks', 'Consider B12 supplements', 'Pair iron-rich foods with Vitamin C']
+            })
     
     analysis['lifestyle_impact'] = lifestyle_insights
     
@@ -1132,6 +1203,80 @@ def generate_personalized_response(question, report_data, user_context=None):
     return response
 
 
+def extract_age_gender_from_text(raw_text):
+    """
+    Extract age and gender from raw text of the PDF report.
+    Returns tuple: (age, gender) - None if not found
+    """
+    age = None
+    gender = None
+    
+    if not raw_text:
+        return None, None
+    
+    text_lower = raw_text.lower()
+    
+    # =============================================
+    # AGE EXTRACTION PATTERNS
+    # =============================================
+    age_patterns = [
+        # "Age: 45 years" or "Age: 45 yrs" or "Age: 45"
+        r'age[:\s]+(\d{1,3})\s*(?:years?|yrs?|y)?',
+        # "45 years old" or "45 yrs old"
+        r'(\d{1,3})\s*(?:years?|yrs?)\s*old',
+        # "Age/Sex: 45/M" or "Age/Gender: 45/F"
+        r'age[/\s]*(?:sex|gender)[:\s]*(\d{1,3})[/\s]*[mf]',
+        # "45 Y" or "45Y"
+        r'(\d{1,3})\s*y(?:ears?|rs?)?\b',
+        # "DOB" based calculation would need date parsing - skip for now
+        # "Patient Age: 45"
+        r'patient\s*age[:\s]+(\d{1,3})',
+    ]
+    
+    for pattern in age_patterns:
+        match = re.search(pattern, text_lower)
+        if match:
+            try:
+                extracted_age = int(match.group(1))
+                # Validate age is reasonable (1-120)
+                if 1 <= extracted_age <= 120:
+                    age = extracted_age
+                    break
+            except:
+                continue
+    
+    # =============================================
+    # GENDER EXTRACTION PATTERNS
+    # =============================================
+    gender_patterns = [
+        # "Sex: Male" or "Sex: Female" or "Sex: M" or "Sex: F"
+        r'sex[:\s]+(male|female|m|f)\b',
+        # "Gender: Male" or "Gender: Female"
+        r'gender[:\s]+(male|female|m|f)\b',
+        # "Age/Sex: 45/M" or "Age/Sex: 45/F"
+        r'age[/\s]*sex[:\s]*\d+[/\s]*(m|f)\b',
+        # "Patient Sex: Male"
+        r'patient\s*sex[:\s]+(male|female|m|f)\b',
+        # "M/45" or "F/45" (gender/age format)
+        r'\b(m|f)[/\s]*\d{1,3}\s*(?:years?|yrs?|y)?\b',
+        # Standalone "Male" or "Female" near patient info
+        r'\b(male|female)\b',
+    ]
+    
+    for pattern in gender_patterns:
+        match = re.search(pattern, text_lower)
+        if match:
+            gender_str = match.group(1).lower()
+            if gender_str in ['m', 'male']:
+                gender = 'Male'
+                break
+            elif gender_str in ['f', 'female']:
+                gender = 'Female'
+                break
+    
+    return age, gender
+
+
 def extract_all_parameters_combined(result_data, raw_text):
     """
     Combine ALL extraction methods to get maximum parameters.
@@ -1493,6 +1638,13 @@ if 'medical_history' not in st.session_state:
     st.session_state.medical_history = []
 if 'lifestyle_factors' not in st.session_state:
     st.session_state.lifestyle_factors = {}
+# Auto-detected from PDF
+if 'detected_age' not in st.session_state:
+    st.session_state.detected_age = None
+if 'detected_gender' not in st.session_state:
+    st.session_state.detected_gender = None
+if 'age_gender_source' not in st.session_state:
+    st.session_state.age_gender_source = 'manual'  # 'pdf' or 'manual'
 
 # Custom CSS
 st.markdown("""
@@ -1530,13 +1682,43 @@ with st.sidebar:
     st.header("🧑 Patient Context")
     st.caption("Optional: Provide details for personalized analysis")
     
+    # Check if a PDF has been processed (validated_data exists)
+    pdf_uploaded = bool(st.session_state.get('validated_data'))
+    
     with st.expander("📋 Demographics", expanded=True):
-        user_age = st.number_input("Age", min_value=1, max_value=120, value=st.session_state.user_age if st.session_state.user_age else 30, key="age_input")
-        user_gender = st.selectbox("Gender", ["Not specified", "Male", "Female"], index=0 if not st.session_state.user_gender else (1 if st.session_state.user_gender == "Male" else 2), key="gender_input")
+        # AGE SECTION
+        if st.session_state.detected_age:
+            # Age was found in PDF
+            st.success(f"✅ Age detected from report: **{st.session_state.detected_age} years**")
+            st.session_state.user_age = st.session_state.detected_age
+        else:
+            # Age not found - show warning only if PDF was uploaded
+            if pdf_uploaded:
+                st.warning("⚠️ Age not found in report. Please select:")
+            else:
+                st.caption("Age:")
+            user_age = st.number_input("Age", min_value=1, max_value=120, 
+                                       value=st.session_state.user_age if st.session_state.user_age else 30, 
+                                       key="age_input",
+                                       label_visibility="collapsed" if pdf_uploaded else "visible")
+            st.session_state.user_age = user_age
         
-        # Update session state
-        st.session_state.user_age = user_age
-        st.session_state.user_gender = user_gender if user_gender != "Not specified" else None
+        # GENDER SECTION
+        if st.session_state.detected_gender:
+            # Gender was found in PDF
+            st.success(f"✅ Gender detected from report: **{st.session_state.detected_gender}**")
+            st.session_state.user_gender = st.session_state.detected_gender
+        else:
+            # Gender not found - show warning only if PDF was uploaded
+            if pdf_uploaded:
+                st.warning("⚠️ Gender not found in report. Please select:")
+            else:
+                st.caption("Gender:")
+            user_gender = st.selectbox("Gender", ["Not specified", "Male", "Female"], 
+                                       index=0 if not st.session_state.user_gender else (1 if st.session_state.user_gender == "Male" else 2), 
+                                       key="gender_input",
+                                       label_visibility="collapsed" if pdf_uploaded else "visible")
+            st.session_state.user_gender = user_gender if user_gender != "Not specified" else None
     
     with st.expander("🏥 Medical History", expanded=False):
         st.caption("Select any existing conditions:")
@@ -1582,9 +1764,11 @@ with st.sidebar:
     
     if context_filled:
         if st.session_state.user_age:
-            st.write(f"**Age:** {st.session_state.user_age} years")
+            source = "📄 (from PDF)" if st.session_state.detected_age else "✏️ (manual)"
+            st.write(f"**Age:** {st.session_state.user_age} years {source}")
         if st.session_state.user_gender:
-            st.write(f"**Gender:** {st.session_state.user_gender}")
+            source = "📄 (from PDF)" if st.session_state.detected_gender else "✏️ (manual)"
+            st.write(f"**Gender:** {st.session_state.user_gender} {source}")
         if st.session_state.medical_history:
             st.write(f"**Conditions:** {', '.join(st.session_state.medical_history)}")
         if st.session_state.lifestyle_factors.get('smoker'):
@@ -1597,6 +1781,8 @@ with st.sidebar:
     if st.button("🔄 Reset Context"):
         st.session_state.user_age = None
         st.session_state.user_gender = None
+        st.session_state.detected_age = None
+        st.session_state.detected_gender = None
         st.session_state.medical_history = []
         st.session_state.lifestyle_factors = {}
         st.rerun()
@@ -1649,6 +1835,22 @@ if uploaded_file is not None:
                 st.error("❌ No valid content detected")
                 st.stop()
             
+            # EXTRACT AGE AND GENDER FROM PDF
+            detected_age, detected_gender = extract_age_gender_from_text(raw_text)
+            
+            # Update session state with detected values
+            if detected_age:
+                st.session_state.detected_age = detected_age
+                st.session_state.user_age = detected_age
+            else:
+                st.session_state.detected_age = None
+            
+            if detected_gender:
+                st.session_state.detected_gender = detected_gender
+                st.session_state.user_gender = detected_gender
+            else:
+                st.session_state.detected_gender = None
+            
             # COMBINED EXTRACTION - Get ALL parameters with deduplication
             validated_data = extract_all_parameters_combined(result_data, raw_text)
             interpretation = interpret_results(validated_data)
@@ -1657,6 +1859,20 @@ if uploaded_file is not None:
             st.session_state.validated_data = validated_data
             
             st.success("✅ Document processed successfully!")
+            
+            # Show age/gender detection status
+            if detected_age or detected_gender:
+                detection_msg = "📄 **Auto-detected from report:** "
+                if detected_age:
+                    detection_msg += f"Age: {detected_age} years"
+                if detected_age and detected_gender:
+                    detection_msg += ", "
+                if detected_gender:
+                    detection_msg += f"Gender: {detected_gender}"
+                st.info(detection_msg)
+            else:
+                st.warning("⚠️ Age/Gender not found in report. Please select manually in the sidebar →")
+            
             st.divider()
             
             # ============================================
@@ -1823,13 +2039,35 @@ if uploaded_file is not None:
                         st.metric(f"{risk_color} Bleeding Risk", f"{bleeding.get('score', 0)}/100")
                         st.caption(f"Level: {bleeding.get('level', 'N/A')}")
                     
-                    # Recommendations
+                    # Recommendations WITH TRACEABILITY
                     recommendations = ai_analysis.get('recommendations', [])
                     if recommendations:
-                        st.markdown("#### AI-Generated Recommendations")
+                        st.markdown("#### 💡 AI-Generated Recommendations")
+                        st.caption("Each recommendation shows: Finding → Risk → Reasoning → Actions")
+                        
                         for rec in recommendations:
                             priority_icon = "🔴" if rec['priority'] == 'High' else "🟡"
                             with st.expander(f"{priority_icon} {rec['category']} (Priority: {rec['priority']})", expanded=True):
+                                # Show traceability chain
+                                trace = rec.get('traceability', {})
+                                if trace:
+                                    st.markdown("**🔍 Traceability Chain:**")
+                                    
+                                    # Finding
+                                    st.markdown(f"📊 **Finding:** {trace.get('finding', 'N/A')}")
+                                    
+                                    # Risk
+                                    st.markdown(f"⚠️ **Risk:** {trace.get('risk', 'N/A')}")
+                                    
+                                    # Reasoning (the key "Because X → Y → Z" chain)
+                                    reasoning = trace.get('reasoning', '')
+                                    if reasoning:
+                                        st.info(f"💭 **Reasoning:** {reasoning}")
+                                    
+                                    st.markdown("---")
+                                
+                                # Actions
+                                st.markdown("**✅ Recommended Actions:**")
                                 for action in rec.get('actions', []):
                                     st.write(f"• {action}")
                     else:
@@ -1934,13 +2172,35 @@ if uploaded_file is not None:
                                     st.metric(f"{risk_color} Metabolic Risk", f"{metabolic.get('adjusted', 0)}/100")
                                     st.caption(f"Base: {metabolic.get('base', 0)} → Adjusted: {metabolic.get('adjusted', 0)}")
                             
-                            # Personalized Recommendations
+                            # Personalized Recommendations WITH TRACEABILITY
                             recommendations = contextual_analysis.get('recommendations', [])
                             if recommendations:
                                 st.markdown("#### 💡 Personalized Recommendations")
+                                st.caption("Each recommendation shows: Finding → Risk → Reasoning → Actions")
+                                
                                 for rec in recommendations:
                                     priority_icon = "🔴" if rec['priority'] == 'High' else "🟡" if rec['priority'] == 'Medium' else "🟢"
                                     with st.expander(f"{priority_icon} {rec['category']} (Priority: {rec['priority']})", expanded=True):
+                                        # Show traceability chain
+                                        trace = rec.get('traceability', {})
+                                        if trace:
+                                            st.markdown("**🔍 Traceability Chain:**")
+                                            
+                                            # Finding
+                                            st.markdown(f"📊 **Finding:** {trace.get('finding', 'N/A')}")
+                                            
+                                            # Risk
+                                            st.markdown(f"⚠️ **Risk:** {trace.get('risk', 'N/A')}")
+                                            
+                                            # Reasoning (the key "Because X → Y → Z" chain)
+                                            reasoning = trace.get('reasoning', '')
+                                            if reasoning:
+                                                st.info(f"💭 **Reasoning:** {reasoning}")
+                                            
+                                            st.markdown("---")
+                                        
+                                        # Actions
+                                        st.markdown("**✅ Recommended Actions:**")
                                         for action in rec.get('actions', []):
                                             st.write(f"• {action}")
                             else:
