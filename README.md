@@ -1,161 +1,124 @@
-# Multi-Model-Ai-Agent-For-Automated-Health-Diagnostics
-An Infosys Springboard Virtual Internship project that builds an AI system to extract data from blood reports using OCR, analyze key health parameters, detect abnormalities and patterns, and generate clear, personalized health insights through a multi-model pipeline.
+🩺 Multi-Model AI Agent for Automated Health Diagnostics
+
+An intelligent AI-based health diagnostics system that automatically analyzes blood test reports, detects abnormalities and medical patterns, and generates clear, personalized health insights using a multi-model AI pipeline.
+
+This project was developed as part of the Infosys Springboard Virtual Internship and demonstrates the application of agentic AI, rule-based medical reasoning, OCR, and Large Language Models (LLMs) in healthcare analytics.
+
+🚀 Project Overview
+
+Modern blood reports are often difficult for non-medical users to interpret.
+This system acts as an AI diagnostic assistant that:
+
+Reads blood reports (PDFs / scanned images)
+
+Extracts parameters using OCR + regex
+
+Applies medical reference ranges
+
+Detects hidden patterns and health risks
+
+Generates human-readable summaries and recommendations
+
+⚠️ Note: This system is for educational and analytical purposes only and does not replace professional medical advice.
+
+🧠 Key Innovations
+
+✅ Multi-Model AI Architecture (3 cooperating models)
+✅ Explainable Rule-Based Medical Reasoning
+✅ OCR + Text-Based Hybrid Parsing
+✅ Pattern Detection & Risk Scoring
+✅ Context-Aware Personalization
+✅ RAG-based Medical Chatbot (Groq API)
+
+🧩 System Architecture
+INPUT (PDF / Image)
+        ↓
+OCR + Text Extraction
+        ↓
+Parameter Classification
+        ↓
+Pattern Detection
+        ↓
+Contextual Adjustment
+        ↓
+Synthesis & Recommendation
+        ↓
+Final Report + Chatbot Response
+
+🔁 Workflow (Step-by-Step)
+
+User Uploads Report
+PDF / scanned image
+Optional context (age, gender, smoking history)
+Extraction Phase
+PyMuPDF for text-based PDFs
+Tesseract OCR for scanned reports
+Regex-based parameter parsing
+
+Synthesis & Output
+
+Structured medical-style summary
+Personalized lifestyle recommendations
+Interactive chatbot via Groq LLM
+
+🧬 Three-Model AI Engine
+🔹 Model 1 – Parameter Classification
+Threshold-based medical rules
+High accuracy and explainability
+
+🔹 Model 2 – Pattern Recognition
+Rule-based expert logic
+Risk scoring using deviation calculations
+
+🔹 Model 3 – Contextual Adjustment
+Age, gender, lifestyle-based tuning
+Produces personalized insights
+
+🛠️ Tech Stack
+Component	Technology
+UI	Streamlit
+Language	Python
+OCR	Tesseract (pytesseract)
+PDF Processing	PyMuPDF (fitz), PDFPlumber
+Data Handling	Pandas
+AI / LLM	Groq API
+Architecture	Agentic, pipeline-based
+Storage	Streamlit session_state
+📁 Project Structure (Simplified)
+├── app.py
+├── data_processor.py
+├── model2_pattern.py
+├── model3_pattern.py
+├── synthesizer.py
+├── system_prompt.py
+├── requirements.txt
+├── .streamlit/
+│   └── secrets.example.toml
+└── README.md
 
 
+📊 Output
 
----
+The system generates:
 
-# 🚀 **Multi-Model AI Agent for Automated Health Diagnostics**
+✔ Highlighted abnormal parameters
+✔ Detected medical patterns
+✔ Risk-adjusted scores
+✔ Personalized health recommendations
+✔ AI-powered chatbot explanations
 
-An intelligent AI system that **reads blood reports**, analyzes medical patterns, detects risks, and generates **personalized health recommendations**.
-Designed to go beyond simple command execution by **inferring user intent**, even when instructions are vague.
+🏆 Key Achievements
 
----
+Hybrid Rule-Based + Generative AI system
+First-level explainable AI for blood report analysis
+RAG-powered health chatbot
+Modular, scalable, agent-based design
+Ready for real-world extension
 
-# 🧠 **Project Overview**
+📌 Disclaimer
 
-```
-   .-----------------------------.
-   |  AI HEALTH DIAGNOSTICS     |
-   |    MULTI–MODEL ENGINE      |
-   '-----------------------------'
-           |   |    |
-      -----'   |    '-----
-     INPUT → ANALYSIS → OUTPUT
-```
+This project is for educational and research purposes only.
+It does not provide medical diagnosis and should not be used as a substitute for professional healthcare advice.
 
-This system processes medical reports in **PDF, scanned image, or JSON format**, extracts parameters through OCR, analyzes them using **three cooperating AI models**, and produces a structured medical-style summary.
-
----
-
-# ✨ **Key Features**
-
-```
- .------------------------------------------------.
- |  • Intent Inference                             |
- |  • Multi-Model Medical Analysis                 |
- |  • OCR-Based Data Extraction                    |
- |  • Pattern Detection & Risk Assessment          |
- |  • Personalized Health Recommendations          |
- '------------------------------------------------'
-```
-
-* Understands user intent, not just literal text
-* Detects abnormal values (high/low/borderline)
-* Identifies combinations (lipid ratios, kidney markers)
-* Generates advice based on findings and user profile
-
----
-
-# 🔁 **System Workflow (ASCII Diagram)**
-
-```
-   .-------------------.       .-------------------.
-   |   1. INPUT        |       |  2. EXTRACTION     |
-   |  (PDF / Image)    | ----> |  OCR + Cleaning    |
-   '-------------------'       '-------------------'
-                |
-                v
-   .-------------------.
-   | 3. AI MODELS      |
-   |-------------------|
-   | Model 1: Values   |
-   | Model 2: Patterns |
-   | Model 3: Context  |
-   '-------------------'
-                |
-                v
-   .-------------------.
-   | 4. SYNTHESIS      |
-   | Full Interpretation|
-   '-------------------'
-                |
-                v
-   .-------------------.
-   | 5. OUTPUT REPORT  |
-   | Summary + Advice  |
-   '-------------------'
-```
-
----
-
-# 🧬 **Three-Model AI Analysis Engine**
-
-```
-   .--------------------------------------.
-   |   MULTI–MODEL ANALYSIS UNIT          |
-   |--------------------------------------|
-   |  [Model 1] Parameter Interpretation   |
-   |      ↓ Compare with reference ranges  |
-   |--------------------------------------|
-   |  [Model 2] Pattern Recognition        |
-   |      ↓ Ratios, correlations, risks    |
-   |--------------------------------------|
-   |  [Model 3] Contextual Analysis        |
-   |      ↓ Age, gender, lifestyle         |
-   '--------------------------------------'
-```
-
-Each model contributes a unique layer of understanding:
-
-### ✔ Model 1 – Baseline Interpretation
-
-* Detects high, low, or borderline values
-* Uses standard medical ranges
-
-### ✔ Model 2 – Pattern Recognition & Risks
-
-* Lipid ratios
-* Kidney/liver function indicators
-* Metabolic patterns
-
-### ✔ Model 3 – Optional Contextual Model
-
-* Adjusts interpretation using patient profile
-
----
-
-# 🧩 **Architecture (ASCII Block Diagram)**
-
-```
- .------------------------------------------------------------.
- |                   SYSTEM ARCHITECTURE                      |
- |------------------------------------------------------------|
- | Input Parser | OCR Engine | Validator | Orchestrator       |
- |------------------------------------------------------------|
- | Model 1 | Model 2 | Model 3 | Synthesis Engine             |
- |------------------------------------------------------------|
- | Recommendation Engine | Report Generator                   |
- '------------------------------------------------------------'
-```
-
-Core components include:
-
-* **Input Interface** – PDFs, images, JSON
-* **OCR Extraction Engine** – pulls values + units
-* **Validation Module** – ensures clean, standardized data
-* **AI Models (1–3)** – perform multi-level medical reasoning
-* **Findings Synthesizer** – merges insights
-* **Recommendation Engine** – generates personalized advice
-* **Report Renderer** – formats final output
-
-
-
----
-
-# 📄 **End-to-End Summary (Visual Text Format)**
-
-```
- INPUT → OCR → CLEANING → AI ANALYSIS → FINDINGS → ADVICE → REPORT
-```
-
-### What the system ultimately delivers:
-
-* A readable health summary
-* Highlighted abnormalities
-* Detected medical patterns
-* Personalized lifestyle/diet recommendations
-* Disclaimer-based final report
-
----
-
+👨‍💻 Author
+Karthikeyan T
