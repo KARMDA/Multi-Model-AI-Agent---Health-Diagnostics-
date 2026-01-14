@@ -1,10 +1,10 @@
-🩺 Multi-Model AI Agent for Automated Health Diagnostics
+**🩺 Multi-Model AI Agent for Automated Health Diagnostics**
 
 An intelligent AI-based health diagnostics system that automatically analyzes blood test reports, detects abnormalities and medical patterns, and generates clear, personalized health insights using a multi-model AI pipeline.
 
 This project was developed as part of the Infosys Springboard Virtual Internship and demonstrates the application of agentic AI, rule-based medical reasoning, OCR, and Large Language Models (LLMs) in healthcare analytics.
 
-🚀 Project Overview
+**🚀 Project Overview**
 
 Modern blood reports are often difficult for non-medical users to interpret.
 This system acts as an AI diagnostic assistant that:
@@ -21,7 +21,7 @@ Generates human-readable summaries and recommendations
 
 ⚠️ Note: This system is for educational and analytical purposes only and does not replace professional medical advice.
 
-🧠 Key Innovations
+**🧠 Key Innovations**
 
 ✅ Multi-Model AI Architecture (3 cooperating models)
 ✅ Explainable Rule-Based Medical Reasoning
@@ -30,7 +30,7 @@ Generates human-readable summaries and recommendations
 ✅ Context-Aware Personalization
 ✅ RAG-based Medical Chatbot (Groq API)
 
-🧩 System Architecture
+**🧩 System Architecture**
 INPUT (PDF / Image)
         ↓
 OCR + Text Extraction
@@ -45,7 +45,7 @@ Synthesis & Recommendation
         ↓
 Final Report + Chatbot Response
 
-🔁 Workflow (Step-by-Step)
+**🔁 Workflow (Step-by-Step)**
 
 User Uploads Report
 PDF / scanned image
@@ -55,13 +55,13 @@ PyMuPDF for text-based PDFs
 Tesseract OCR for scanned reports
 Regex-based parameter parsing
 
-Synthesis & Output
+**Synthesis & Output**
 
 Structured medical-style summary
 Personalized lifestyle recommendations
 Interactive chatbot via Groq LLM
 
-🧬 Three-Model AI Engine
+**🧬 Three-Model AI Engine**
 🔹 Model 1 – Parameter Classification
 Threshold-based medical rules
 High accuracy and explainability
@@ -74,17 +74,16 @@ Risk scoring using deviation calculations
 Age, gender, lifestyle-based tuning
 Produces personalized insights
 
-🛠️ Tech Stack
-Component	Technology
+**🛠️ Tech Stack**
+
 UI	Streamlit
 Language	Python
 OCR	Tesseract (pytesseract)
 PDF Processing	PyMuPDF (fitz), PDFPlumber
 Data Handling	Pandas
 AI / LLM	Groq API
-Architecture	Agentic, pipeline-based
-Storage	Streamlit session_state
-📁 Project Structure (Simplified)
+
+**📁 Project Structure**
 ├── app.py
 ├── data_processor.py
 ├── model2_pattern.py
@@ -97,9 +96,8 @@ Storage	Streamlit session_state
 └── README.md
 
 
-📊 Output
-
-The system generates:
+**📊 Output**
+**The system generates:**
 
 ✔ Highlighted abnormal parameters
 ✔ Detected medical patterns
@@ -107,7 +105,7 @@ The system generates:
 ✔ Personalized health recommendations
 ✔ AI-powered chatbot explanations
 
-🏆 Key Achievements
+**🏆 Key Achievements**
 
 Hybrid Rule-Based + Generative AI system
 First-level explainable AI for blood report analysis
@@ -115,10 +113,9 @@ RAG-powered health chatbot
 Modular, scalable, agent-based design
 Ready for real-world extension
 
-📌 Disclaimer
-
+**📌 Disclaimer**
 This project is for educational and research purposes only.
 It does not provide medical diagnosis and should not be used as a substitute for professional healthcare advice.
 
-👨‍💻 Author
-Karthikeyan T
+**👨‍💻 Author
+Karthikeyan T**
