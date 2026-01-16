@@ -8,9 +8,16 @@ import time
 import re
 from datetime import datetime
 
-# Add parent directories to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# Add parent directories to path for imports - more robust path handling
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_src_dir = os.path.dirname(_current_dir)
+_project_root = os.path.dirname(_src_dir)
+
+# Add paths in order of priority
+if _src_dir not in sys.path:
+    sys.path.insert(0, _src_dir)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
 from core.ocr_engine import extract_text_from_file
 from core.parser import parse_blood_report
@@ -22,14 +29,12 @@ from phase2.phase2_integration_safe import integrate_phase2_analysis
 
 # Enhanced AI Agent imports
 from core.enhanced_ai_agent import create_enhanced_ai_agent
-
 # Advanced Risk Calculator imports
 from core.advanced_risk_calculator import calculate_all_advanced_risks, AdvancedRiskCalculator
 
 # Dynamic Reference Ranges and Unit Converter imports
 from core.dynamic_reference_ranges import validate_parameter_dynamic, get_dynamic_reference, get_all_dynamic_ranges
 from core.unit_converter import convert_to_standard_unit, get_standard_unit
-
 
 def perform_multi_model_analysis(report_data):
     """
@@ -1949,18 +1954,9 @@ if uploaded_file is not None:
             }
             contextual_analysis = perform_contextual_analysis(validated_data, user_context)
             
-            # Calculate Advanced Risks (Framingham, Lipid Ratios, Metabolic Syndrome)
-            advanced_risks = calculate_all_advanced_risks(validated_data, user_context)
-            
             if ai_analysis:
                 # Create tabs for different models
-                tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                    "📊 Model 1: Parameter Analysis", 
-                    "🔍 Model 2: Pattern Recognition", 
-                    "⚠️ Model 3: Risk Assessment", 
-                    "🧑 Model 4: Contextual Analysis",
-                    "❤️ Model 5: Cardiovascular & Metabolic"
-                ])
+                tab1, tab2, tab3, tab4 = st.tabs(["📊 Model 1: Parameter Analysis", "🔍 Model 2: Pattern Recognition", "⚠️ Model 3: Risk Assessment", "🧑 Model 4: Contextual Analysis"])
                 
                 with tab1:
                     st.markdown("### Rule-Based Parameter Analysis")
@@ -2223,225 +2219,6 @@ if uploaded_file is not None:
                                 st.success("✅ No specific concerns based on your profile!")
                     else:
                         st.info("👈 Provide patient context in the sidebar for personalized analysis")
-                
-                # ============================================
-                # TAB 5: CARDIOVASCULAR & METABOLIC RISK
-                # ============================================
-                with tab5:
-                    st.markdown("### Cardiovascular & Metabolic Risk Analysis")
-                    st.caption("Advanced risk calculations: Framingham Score, Lipid Ratios, Metabolic Syndrome")
-                    
-                    # Sub-tabs for different risk analyses
-                    risk_tab1, risk_tab2, risk_tab3 = st.tabs(["💉 Lipid Ratios", "❤️ Framingham Risk", "🔬 Metabolic Syndrome"])
-                    
-                    # =============================================
-                    # LIPID PANEL RATIOS
-                    # =============================================
-                    with risk_tab1:
-                        st.markdown("#### Lipid Panel Ratio Analysis")
-                        lipid_data = advanced_risks.get('lipid_ratios', {})
-                        
-                        if lipid_data.get('available'):
-                            # Show raw values
-                            st.markdown("**📊 Your Lipid Values:**")
-                            col1, col2, col3, col4 = st.columns(4)
-                            with col1:
-                                tc = lipid_data.get('total_cholesterol')
-                                st.metric("Total Cholesterol", f"{tc} mg/dL" if tc else "N/A")
-                            with col2:
-                                hdl = lipid_data.get('hdl')
-                                st.metric("HDL", f"{hdl} mg/dL" if hdl else "N/A")
-                            with col3:
-                                ldl = lipid_data.get('ldl')
-                                st.metric("LDL", f"{ldl} mg/dL" if ldl else "N/A")
-                            with col4:
-                                tg = lipid_data.get('triglycerides')
-                                st.metric("Triglycerides", f"{tg} mg/dL" if tg else "N/A")
-                            
-                            st.divider()
-                            
-                            # Show calculated ratios
-                            st.markdown("**📈 Calculated Ratios:**")
-                            ratios = lipid_data.get('ratios', {})
-                            
-                            if ratios:
-                                for ratio_key, ratio_info in ratios.items():
-                                    col1, col2, col3 = st.columns([2, 1, 1])
-                                    with col1:
-                                        st.write(f"**{ratio_info.get('name', ratio_key)}**")
-                                    with col2:
-                                        st.write(f"Value: **{ratio_info.get('value')}**")
-                                    with col3:
-                                        status = ratio_info.get('status', 'Unknown')
-                                        if status == 'Optimal' or status == 'Low Risk':
-                                            st.success(status)
-                                        elif status == 'Borderline' or status == 'Intermediate':
-                                            st.warning(status)
-                                        else:
-                                            st.error(status)
-                                    st.caption(f"Optimal: {ratio_info.get('optimal', 'N/A')}")
-                                    st.divider()
-                            
-                            # Interpretations
-                            st.markdown("**🔍 Interpretations:**")
-                            for interp in lipid_data.get('interpretations', []):
-                                if interp.startswith("⚠️"):
-                                    st.error(interp)
-                                elif interp.startswith("⚡"):
-                                    st.warning(interp)
-                                else:
-                                    st.success(interp)
-                            
-                            # Overall risk
-                            risk_level = lipid_data.get('risk_level', 'Unknown')
-                            risk_color = "🔴" if risk_level == 'High' else "🟡" if 'Moderate' in risk_level else "🟢"
-                            st.markdown(f"**Overall Lipid Risk: {risk_color} {risk_level}**")
-                        else:
-                            st.warning("⚠️ Lipid panel data not available in report. Required: Total Cholesterol, HDL, LDL, Triglycerides")
-                    
-                    # =============================================
-                    # FRAMINGHAM CARDIOVASCULAR RISK
-                    # =============================================
-                    with risk_tab2:
-                        st.markdown("#### Framingham 10-Year Cardiovascular Risk Score")
-                        fram_data = advanced_risks.get('framingham_risk', {})
-                        
-                        if fram_data.get('available'):
-                            # Risk Score Display
-                            risk_pct = fram_data.get('risk_percentage', 0)
-                            risk_cat = fram_data.get('risk_category', 'Unknown')
-                            
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.metric("10-Year CVD Risk", f"{risk_pct}%")
-                            with col2:
-                                if risk_cat == 'Low':
-                                    st.success(f"Risk Category: {risk_cat}")
-                                elif risk_cat == 'Moderate':
-                                    st.warning(f"Risk Category: {risk_cat}")
-                                else:
-                                    st.error(f"Risk Category: {risk_cat}")
-                            
-                            # Progress bar for risk
-                            st.progress(min(risk_pct / 30, 1.0))
-                            st.caption("Risk scale: 0% (Low) → 30%+ (Very High)")
-                            
-                            st.divider()
-                            
-                            # Inputs used
-                            st.markdown("**📋 Inputs Used for Calculation:**")
-                            inputs = fram_data.get('inputs_used', {})
-                            col1, col2, col3 = st.columns(3)
-                            with col1:
-                                st.write(f"Age: {inputs.get('age', 'N/A')}")
-                                st.write(f"Gender: {inputs.get('gender', 'N/A')}")
-                                st.write(f"Smoker: {'Yes' if inputs.get('smoker') else 'No'}")
-                            with col2:
-                                st.write(f"Total Cholesterol: {inputs.get('total_cholesterol', 'N/A')} mg/dL")
-                                st.write(f"HDL: {inputs.get('hdl', 'N/A')} mg/dL")
-                                st.write(f"Diabetic: {'Yes' if inputs.get('diabetic') else 'No'}")
-                            with col3:
-                                st.write(f"Systolic BP: {inputs.get('systolic_bp', 'N/A')} mmHg")
-                                st.write(f"BP Treated: {'Yes' if inputs.get('bp_treated') else 'No'}")
-                                st.write(f"Total Points: {fram_data.get('total_points', 'N/A')}")
-                            
-                            st.divider()
-                            
-                            # Interpretation
-                            st.markdown("**💭 Interpretation:**")
-                            st.info(fram_data.get('interpretation', ''))
-                            
-                            # Recommendations
-                            recs = fram_data.get('recommendations', [])
-                            if recs:
-                                st.markdown("**✅ Recommendations:**")
-                                for rec in recs:
-                                    st.write(f"• {rec}")
-                        else:
-                            st.warning("⚠️ Cannot calculate Framingham Risk Score")
-                            missing = fram_data.get('missing_inputs', [])
-                            if missing:
-                                st.error(f"Missing required inputs: {', '.join(missing)}")
-                            st.info("Required: Age (30-79), Gender, Total Cholesterol, HDL Cholesterol")
-                    
-                    # =============================================
-                    # METABOLIC SYNDROME DETECTION
-                    # =============================================
-                    with risk_tab3:
-                        st.markdown("#### Metabolic Syndrome Detection (NCEP ATP III Criteria)")
-                        met_data = advanced_risks.get('metabolic_syndrome', {})
-                        
-                        if met_data.get('available'):
-                            # Main result
-                            criteria_met = met_data.get('criteria_met', 0)
-                            has_syndrome = met_data.get('has_metabolic_syndrome', False)
-                            
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.metric("Criteria Met", f"{criteria_met} / 5")
-                            with col2:
-                                if has_syndrome:
-                                    st.error("⚠️ METABOLIC SYNDROME DETECTED")
-                                elif criteria_met >= 2:
-                                    st.warning("⚡ Pre-Metabolic Syndrome")
-                                else:
-                                    st.success("✅ No Metabolic Syndrome")
-                            
-                            # Progress indicator
-                            st.progress(criteria_met / 5)
-                            st.caption("3 or more criteria = Metabolic Syndrome diagnosis")
-                            
-                            st.divider()
-                            
-                            # Criteria details
-                            st.markdown("**📋 Criteria Assessment:**")
-                            criteria = met_data.get('criteria_details', [])
-                            
-                            for crit in criteria:
-                                col1, col2, col3 = st.columns([2, 1, 1])
-                                with col1:
-                                    st.write(f"**{crit.get('criterion')}**")
-                                with col2:
-                                    st.write(f"Value: {crit.get('value', 'N/A')}")
-                                with col3:
-                                    if crit.get('met'):
-                                        st.error("⚠️ Met")
-                                    else:
-                                        status = crit.get('status', '')
-                                        if '✅' in status:
-                                            st.success("✅ Normal")
-                                        elif '❓' in status:
-                                            st.info("❓ Unknown")
-                                        else:
-                                            st.success("✅ Not Met")
-                                st.caption(f"Threshold: {crit.get('threshold', 'N/A')}")
-                            
-                            st.divider()
-                            
-                            # Interpretation
-                            st.markdown("**💭 Interpretation:**")
-                            interp = met_data.get('interpretation', '')
-                            if '⚠️' in interp:
-                                st.error(interp)
-                            elif '⚡' in interp:
-                                st.warning(interp)
-                            else:
-                                st.success(interp)
-                            
-                            # Recommendations
-                            recs = met_data.get('recommendations', [])
-                            if recs:
-                                st.markdown("**✅ Recommendations:**")
-                                for rec in recs:
-                                    st.write(f"• {rec}")
-                            
-                            # Missing data note
-                            missing = met_data.get('missing_data', [])
-                            if missing:
-                                st.caption(f"Note: Some data not available in report: {', '.join(missing)}")
-                        else:
-                            st.warning("⚠️ Insufficient data for Metabolic Syndrome assessment")
-                            st.info("Required: At least Triglycerides, HDL, or Glucose values")
             
             st.divider()
             
