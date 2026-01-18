@@ -13,6 +13,13 @@ from phase1.medical_validator import process_medical_document
 from phase1.table_extractor import extract_medical_table
 from phase1.phase1_extractor import extract_phase1_medical_image
 
+# Import unified OCR provider for API fallback
+try:
+    from utils.ocr_provider import get_ocr_provider, OCRProviderType
+    HAS_OCR_PROVIDER = True
+except ImportError:
+    HAS_OCR_PROVIDER = False
+
 # Set Tesseract path for Windows
 if os.name == 'nt':  # Windows
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -22,11 +29,16 @@ class MedicalOCROrchestrator:
     """
     Medical OCR Orchestration Agent - Enhanced for robust image processing
     Implements multiple OCR strategies and aggressive preprocessing for challenging images
+    Supports both local Tesseract and cloud OCR APIs with automatic fallback
     """
     
     def __init__(self):
         self.min_text_length = 5  # Further reduced for very short medical texts
         self.min_confidence_threshold = 0.2  # Much more lenient for real-world images
+        
+        # Initialize unified OCR provider if available
+        self._ocr_provider = get_ocr_provider() if HAS_OCR_PROVIDER else None
+        
         self.medical_parameter_patterns = [
             r'(?i)hemoglobin|hb|hgb',
             r'(?i)rbc|red blood cell',
@@ -244,10 +256,29 @@ class MedicalOCROrchestrator:
     def perform_ocr_with_validation(self, image):
         """
         ROBUST OCR execution with multiple strategies and preprocessing approaches
+        Supports both local Tesseract and cloud OCR APIs with automatic fallback
         """
         best_result = None
         best_confidence = 0
         all_results = []
+        
+        # First, try unified OCR provider if available (handles API fallback)
+        if self._ocr_provider:
+            try:
+                provider_result = self._ocr_provider.extract_text(image)
+                if provider_result.get('success') and provider_result.get('text'):
+                    return {
+                        'text': provider_result['text'],
+                        'confidence': provider_result['confidence'],
+                        'config_used': f"unified_provider_{provider_result['provider']}",
+                        'strategy': 'unified_provider',
+                        'ocr_config': provider_result['provider'],
+                        'total_attempts': 1,
+                        'all_strategies_tried': ['unified_provider']
+                    }
+            except Exception as e:
+                # Fall through to local Tesseract strategies
+                pass
         
         # OCR configurations optimized for different scenarios
         ocr_configs = [
@@ -283,7 +314,7 @@ class MedicalOCROrchestrator:
             }
         ]
         
-        # Try each preprocessing strategy
+        # Try each preprocessing strategy with local Tesseract
         for strategy in self.preprocessing_strategies:
             try:
                 # Preprocess image with current strategy
@@ -331,6 +362,34 @@ class MedicalOCROrchestrator:
                         
             except Exception as e:
                 continue
+        
+        # If no good result from Tesseract, try cloud APIs as fallback
+        if (not best_result or best_confidence < 50) and self._ocr_provider:
+            try:
+                # Force API-only mode for fallback
+                original_priority = self._ocr_provider.priority
+                self._ocr_provider.priority = "api_only"
+                
+                provider_result = self._ocr_provider.extract_text(image)
+                
+                # Restore original priority
+                self._ocr_provider.priority = original_priority
+                
+                if provider_result.get('success') and provider_result.get('text'):
+                    api_result = {
+                        'text': provider_result['text'],
+                        'confidence': provider_result['confidence'],
+                        'config_used': f"api_fallback_{provider_result['provider']}",
+                        'strategy': 'api_fallback',
+                        'ocr_config': provider_result['provider']
+                    }
+                    
+                    # Use API result if it's better
+                    if not best_result or provider_result['confidence'] > best_result.get('confidence', 0):
+                        best_result = api_result
+                        
+            except Exception as e:
+                pass
         
         # If no good result found, try to find the best available
         if not best_result and all_results:

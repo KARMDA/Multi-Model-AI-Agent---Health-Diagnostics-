@@ -27,6 +27,19 @@ from utils.csv_converter import json_to_ml_csv
 from utils.ollama_manager import auto_start_ollama
 from phase2.phase2_integration_safe import integrate_phase2_analysis
 
+# OCR and LLM Provider Status imports
+try:
+    from utils.ocr_provider import get_ocr_provider, get_ocr_status
+    HAS_OCR_PROVIDER = True
+except ImportError:
+    HAS_OCR_PROVIDER = False
+
+try:
+    from utils.llm_provider import get_llm_provider, get_llm_status
+    HAS_LLM_PROVIDER = True
+except ImportError:
+    HAS_LLM_PROVIDER = False
+
 # Enhanced AI Agent imports
 from core.enhanced_ai_agent import create_enhanced_ai_agent
 # Advanced Risk Calculator imports
@@ -35,6 +48,9 @@ from core.advanced_risk_calculator import calculate_all_advanced_risks, Advanced
 # Dynamic Reference Ranges and Unit Converter imports
 from core.dynamic_reference_ranges import validate_parameter_dynamic, get_dynamic_reference, get_all_dynamic_ranges
 from core.unit_converter import convert_to_standard_unit, get_standard_unit
+
+# Comprehensive Report Generator import
+from core.comprehensive_report_generator import create_comprehensive_report_generator
 
 def perform_multi_model_analysis(report_data):
     """
@@ -1228,39 +1244,53 @@ def extract_age_gender_from_text(raw_text):
     
     text_lower = raw_text.lower()
     
+    # Debug: Print first 200 characters of text being processed
+    print(f"[DEBUG] Processing text: {text_lower[:200]}...")
+    
     # =============================================
     # AGE EXTRACTION PATTERNS
     # =============================================
     age_patterns = [
+        # "Age/Sex: 45 Years / Male" - handle the specific format from your report
+        r'age[/\s]*sex[:\s]*(\d{1,3})\s*years?\s*[/\s]*(?:male|female|m|f)',
         # "Age: 45 years" or "Age: 45 yrs" or "Age: 45"
         r'age[:\s]+(\d{1,3})\s*(?:years?|yrs?|y)?',
         # "45 years old" or "45 yrs old"
         r'(\d{1,3})\s*(?:years?|yrs?)\s*old',
         # "Age/Sex: 45/M" or "Age/Gender: 45/F"
         r'age[/\s]*(?:sex|gender)[:\s]*(\d{1,3})[/\s]*[mf]',
-        # "45 Y" or "45Y"
+        # "45 Y" or "45Y" or "45 Years"
         r'(\d{1,3})\s*y(?:ears?|rs?)?\b',
-        # "DOB" based calculation would need date parsing - skip for now
         # "Patient Age: 45"
         r'patient\s*age[:\s]+(\d{1,3})',
     ]
     
-    for pattern in age_patterns:
+    for i, pattern in enumerate(age_patterns):
         match = re.search(pattern, text_lower)
         if match:
             try:
                 extracted_age = int(match.group(1))
+                print(f"[DEBUG] Pattern {i+1} matched: '{match.group(0)}' -> age: {extracted_age}")
                 # Validate age is reasonable (1-120)
                 if 1 <= extracted_age <= 120:
                     age = extracted_age
+                    print(f"[DEBUG] Age accepted: {age}")
                     break
-            except:
+                else:
+                    print(f"[DEBUG] Age rejected (out of range): {extracted_age}")
+            except Exception as e:
+                print(f"[DEBUG] Error parsing age: {e}")
                 continue
+    
+    if age is None:
+        print("[DEBUG] No valid age found")
     
     # =============================================
     # GENDER EXTRACTION PATTERNS
     # =============================================
     gender_patterns = [
+        # "Age/Sex: 45 Years / Male" - handle the specific format from your report
+        r'age[/\s]*sex[:\s]*\d+\s*years?\s*[/\s]*(male|female|m|f)\b',
         # "Sex: Male" or "Sex: Female" or "Sex: M" or "Sex: F"
         r'sex[:\s]+(male|female|m|f)\b',
         # "Gender: Male" or "Gender: Female"
@@ -1275,17 +1305,24 @@ def extract_age_gender_from_text(raw_text):
         r'\b(male|female)\b',
     ]
     
-    for pattern in gender_patterns:
+    for i, pattern in enumerate(gender_patterns):
         match = re.search(pattern, text_lower)
         if match:
             gender_str = match.group(1).lower()
+            print(f"[DEBUG] Gender pattern {i+1} matched: '{match.group(0)}' -> gender: {gender_str}")
             if gender_str in ['m', 'male']:
                 gender = 'Male'
+                print(f"[DEBUG] Gender accepted: {gender}")
                 break
             elif gender_str in ['f', 'female']:
                 gender = 'Female'
+                print(f"[DEBUG] Gender accepted: {gender}")
                 break
     
+    if gender is None:
+        print("[DEBUG] No valid gender found")
+    
+    print(f"[DEBUG] Final result: age={age}, gender={gender}")
     return age, gender
 
 
@@ -1805,11 +1842,42 @@ if not st.session_state.enhanced_ai_agent:
     st.session_state.ai_session_id = st.session_state.enhanced_ai_agent.start_user_session(session_type="analysis")
 
 # Status indicators
-col1, col2 = st.columns(2)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.success("🤖 AI Agent Active" if st.session_state.enhanced_ai_agent else "⚠️ AI Initializing")
 with col2:
     st.success("🤖 AI Analysis Ready" if ollama_setup["ready"] else "⚠️ AI Limited")
+
+# OCR Provider Status
+with col3:
+    if HAS_OCR_PROVIDER:
+        ocr_status = get_ocr_status()
+        if ocr_status.get('tesseract_available'):
+            st.success("🔍 OCR: Local")
+        elif ocr_status.get('ocr_space_available'):
+            st.info("🔍 OCR: API (OCR.space)")
+        elif ocr_status.get('google_vision_available'):
+            st.info("🔍 OCR: API (Google)")
+        else:
+            st.warning("🔍 OCR: Not Available")
+    else:
+        st.success("🔍 OCR: Local")
+
+# LLM Provider Status
+with col4:
+    if HAS_LLM_PROVIDER:
+        llm_status = get_llm_status()
+        if llm_status.get('ollama_available'):
+            st.success("🧠 LLM: Local (Ollama)")
+        elif llm_status.get('hf_available'):
+            st.info("🧠 LLM: API (HuggingFace)")
+        else:
+            st.warning("🧠 LLM: Not Available")
+    else:
+        if ollama_setup.get("ready"):
+            st.success("🧠 LLM: Local (Ollama)")
+        else:
+            st.warning("🧠 LLM: Not Available")
 
 st.divider()
 
@@ -1842,13 +1910,99 @@ if uploaded_file is not None:
             
             # Get raw text
             raw_text = result_data.get("raw_text", "")
+            extraction_method = result_data.get("extraction_method", "unknown")
             
+            # Check if we need to retry with API
+            needs_api_retry = False
             if not raw_text or len(raw_text.strip()) < 20:
-                st.error("❌ No valid content detected")
+                needs_api_retry = True
+            else:
+                # Try to extract parameters first to check if local OCR worked
+                temp_validated = extract_all_parameters_combined(result_data, raw_text)
+                if not temp_validated or len(temp_validated) == 0:
+                    needs_api_retry = True
+                    st.warning("⚠️ Local OCR found no parameters. Retrying with OCR API...")
+            
+            # Retry with OCR API if local failed
+            if needs_api_retry and HAS_OCR_PROVIDER:
+                try:
+                    ocr_provider = get_ocr_provider()
+                    # Force API mode
+                    original_priority = ocr_provider.priority
+                    ocr_provider.priority = "api_only"
+                    
+                    # Reset file position and read image
+                    uploaded_file.seek(0)
+                    from PIL import Image
+                    
+                    file_type = uploaded_file.type
+                    if "pdf" in file_type.lower():
+                        st.info("🔄 Retrying PDF with OCR API...")
+                        # For PDF, we need pdf2image
+                        try:
+                            import tempfile
+                            from pdf2image import convert_from_bytes
+                            
+                            pdf_bytes = uploaded_file.read()
+                            pages = convert_from_bytes(pdf_bytes, dpi=200)
+                            
+                            api_text = ""
+                            for i, page in enumerate(pages):
+                                page_result = ocr_provider.extract_text(page)
+                                if page_result.get('success'):
+                                    api_text += f"\n--- Page {i+1} ---\n" + page_result.get('text', '')
+                                    extraction_method = f"api_fallback_{page_result.get('provider', 'unknown')}"
+                            
+                            if api_text.strip():
+                                raw_text = api_text
+                                result_data['raw_text'] = raw_text
+                                result_data['extraction_method'] = extraction_method
+                        except Exception as pdf_err:
+                            st.warning(f"PDF API retry failed: {pdf_err}")
+                    else:
+                        # For images
+                        st.info("🔄 Retrying image with OCR API...")
+                        image = Image.open(uploaded_file)
+                        api_result = ocr_provider.extract_text(image)
+                        
+                        if api_result.get('success') and api_result.get('text'):
+                            raw_text = api_result['text']
+                            extraction_method = f"api_fallback_{api_result.get('provider', 'unknown')}"
+                            result_data['raw_text'] = raw_text
+                            result_data['extraction_method'] = extraction_method
+                    
+                    # Restore original priority
+                    ocr_provider.priority = original_priority
+                    
+                except Exception as api_err:
+                    st.warning(f"⚠️ OCR API fallback failed: {api_err}")
+            
+            # Final check for valid content
+            if not raw_text or len(raw_text.strip()) < 20:
+                st.error("❌ No valid content detected (tried both Local OCR and API)")
                 st.stop()
+            
+            # Show OCR method used
+            if "api" in extraction_method.lower() or "ocr_space" in extraction_method.lower() or "google" in extraction_method.lower() or "huggingface" in extraction_method.lower():
+                st.info(f"🔍 Text extracted using: **OCR API** ({extraction_method})")
+            elif "ocr" in extraction_method.lower():
+                st.info(f"🔍 Text extracted using: **Local OCR (Tesseract)**")
+            elif "direct" in extraction_method.lower():
+                st.info(f"🔍 Text extracted using: **Direct Text Extraction** (digital PDF)")
+            else:
+                st.info(f"🔍 Extraction method: {extraction_method}")
+            
+            # Debug: Show extracted text (collapsible)
+            with st.expander("🔍 Debug: View Extracted Text", expanded=False):
+                st.text_area("Raw OCR Text", raw_text, height=200)
+                st.caption(f"Text length: {len(raw_text)} characters")
             
             # EXTRACT AGE AND GENDER FROM PDF
             detected_age, detected_gender = extract_age_gender_from_text(raw_text)
+            
+            # Debug: Log what was extracted
+            if detected_age:
+                st.info(f"🔍 Debug: Extracted age={detected_age} from text")
             
             # Update session state with detected values
             if detected_age:
@@ -1953,6 +2107,11 @@ if uploaded_file is not None:
                 'lifestyle': st.session_state.lifestyle_factors
             }
             contextual_analysis = perform_contextual_analysis(validated_data, user_context)
+            
+            # Store analysis results in session state for download
+            st.session_state.ai_analysis = ai_analysis
+            st.session_state.contextual_analysis = contextual_analysis
+            st.session_state.user_context = user_context
             
             if ai_analysis:
                 # Create tabs for different models
@@ -2264,18 +2423,56 @@ if uploaded_file is not None:
             # ============================================
             # DOWNLOAD OPTIONS
             # ============================================
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
+            
+            # Create comprehensive report generator
+            report_generator = create_comprehensive_report_generator()
+            
+            # Get analysis data from session state
+            ai_analysis = st.session_state.get('ai_analysis', {})
+            contextual_analysis = st.session_state.get('contextual_analysis', {})
+            user_context = st.session_state.get('user_context', {})
             
             with col1:
-                report_text = f"Blood Report Analysis\n{'='*40}\nFile: {uploaded_file.name}\n\nParameters:\n"
-                for k, v in validated_data.items():
-                    report_text += f"  {k}: {v.get('value')} {v.get('unit', '')} ({v.get('status', '')})\n"
+                # Generate comprehensive text report
+                comprehensive_report = report_generator.generate_comprehensive_report(
+                    validated_data=validated_data,
+                    ai_analysis=ai_analysis,
+                    contextual_analysis=contextual_analysis,
+                    user_context=user_context,
+                    filename=uploaded_file.name,
+                    format_type="text"
+                )
                 
-                st.download_button("📄 Download Report", report_text, f"report_{uploaded_file.name.split('.')[0]}.txt", "text/plain")
+                st.download_button(
+                    "📄 Download Comprehensive Report", 
+                    comprehensive_report, 
+                    f"comprehensive_report_{uploaded_file.name.split('.')[0]}.txt", 
+                    "text/plain"
+                )
             
             with col2:
+                # Generate JSON report for technical users
+                json_report = report_generator.generate_comprehensive_report(
+                    validated_data=validated_data,
+                    ai_analysis=ai_analysis,
+                    contextual_analysis=contextual_analysis,
+                    user_context=user_context,
+                    filename=uploaded_file.name,
+                    format_type="json"
+                )
+                
+                st.download_button(
+                    "📊 Download JSON Report", 
+                    json_report, 
+                    f"analysis_data_{uploaded_file.name.split('.')[0]}.json", 
+                    "application/json"
+                )
+            
+            with col3:
+                # Keep original CSV export for compatibility
                 try:
-                    st.download_button("📊 Download CSV", ml_csv, f"data_{uploaded_file.name.split('.')[0]}.csv", "text/csv")
+                    st.download_button("📈 Download CSV", ml_csv, f"data_{uploaded_file.name.split('.')[0]}.csv", "text/csv")
                 except:
                     pass
             

@@ -6,17 +6,41 @@ import requests
 import re
 from .advanced_pattern_analysis import Milestone2Integration
 
+# Import unified LLM provider
+try:
+    from utils.llm_provider import get_llm_provider, generate_text
+    HAS_LLM_PROVIDER = True
+except ImportError:
+    HAS_LLM_PROVIDER = False
+
 
 class Phase2Orchestrator:
-    """Phase-2 Medical AI Analysis using Mistral 7B Instruct via Ollama with Milestone-2 Integration"""
+    """Phase-2 Medical AI Analysis using Mistral 7B Instruct via Ollama/HF API with Milestone-2 Integration"""
     
     def __init__(self, ollama_url: str = "http://localhost:11434"):
         self.ollama_url = ollama_url
         self.model_name = "mistral:instruct"
         self.milestone2_integration = Milestone2Integration()
         
+        # Use unified LLM provider if available
+        self._llm_provider = get_llm_provider() if HAS_LLM_PROVIDER else None
+        
     def _call_ollama(self, prompt: str, system_prompt: str = "") -> str:
-        """Call Ollama API with error handling"""
+        """Call LLM API with automatic fallback between Ollama and HF API"""
+        
+        # Use unified provider if available
+        if self._llm_provider:
+            try:
+                return self._llm_provider.generate(
+                    prompt=prompt,
+                    system_prompt=system_prompt,
+                    temperature=0.1,
+                    max_tokens=1000
+                )
+            except Exception as e:
+                return f"Error: LLM provider failed - {str(e)}"
+        
+        # Fallback to direct Ollama call (legacy behavior)
         try:
             payload = {
                 "model": self.model_name,
@@ -24,7 +48,7 @@ class Phase2Orchestrator:
                 "system": system_prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0.1,  # Low temperature for consistency
+                    "temperature": 0.1,
                     "top_p": 0.9,
                     "num_predict": 1000
                 }

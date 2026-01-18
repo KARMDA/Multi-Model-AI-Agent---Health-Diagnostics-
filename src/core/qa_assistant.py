@@ -1,17 +1,26 @@
 """
 Blood Report Q&A Assistant
 Uses Mistral LLM with strict medical prompting for constrained Q&A
+Supports both local Ollama and Hugging Face Inference API
 """
 
 import json
 import requests
 from typing import Dict, List, Any, Optional
 
+# Import unified LLM provider
+try:
+    from utils.llm_provider import get_llm_provider, LLMProviderType
+    HAS_LLM_PROVIDER = True
+except ImportError:
+    HAS_LLM_PROVIDER = False
+
 
 class BloodReportQAAssistant:
     """
     Medical Report Question-Answering Assistant using Mistral LLM.
     Sends questions with report data to LLM using strict medical prompt.
+    Supports both local Ollama and Hugging Face Inference API with automatic fallback.
     """
     
     def __init__(self, ollama_url: str = "http://localhost:11434"):
@@ -22,6 +31,9 @@ class BloodReportQAAssistant:
         self.fallback_model = "mistral:instruct"
         self._response_cache = {}  # Enhanced response caching
         self._model_warmed_up = False  # Track model warm-up status
+        
+        # Use unified LLM provider if available
+        self._llm_provider = get_llm_provider() if HAS_LLM_PROVIDER else None
         
         # Ultra-streamlined prompt for maximum speed
         self.system_prompt = """Medical AI for blood reports. Answer using ONLY report data.
@@ -164,7 +176,13 @@ Safety: "Based on report, not diagnosis. Consult doctor."
         return question
     
     def _is_ollama_available(self) -> bool:
-        """Check if Ollama service is available with fast model detection"""
+        """Check if any LLM service is available (Ollama or HF API)"""
+        # Use unified provider if available
+        if self._llm_provider:
+            provider = self._llm_provider.get_active_provider()
+            return provider != LLMProviderType.NONE
+        
+        # Fallback to direct Ollama check
         try:
             response = requests.get(f"{self.ollama_url}/api/tags", timeout=3)
             if response.status_code == 200:
@@ -256,11 +274,35 @@ A:"""
         return prompt
     
     def _query_mistral_fast(self, prompt: str) -> str:
-        """Ultra-optimized Mistral query for maximum speed"""
+        """Ultra-optimized LLM query for maximum speed - supports Ollama and HF API"""
         try:
             # Store the prompt for debugging
             self._last_prompt = prompt
             
+            # Use unified LLM provider if available
+            if self._llm_provider:
+                response = self._llm_provider.generate(
+                    prompt=prompt,
+                    system_prompt=self.system_prompt,
+                    temperature=0.1,
+                    max_tokens=250
+                )
+                
+                if response and not response.startswith("Error:"):
+                    # Clean up the response
+                    answer = response.strip()
+                    for stop_word in ["A:", "Answer:", "DATA:", "Q:"]:
+                        if stop_word in answer:
+                            answer = answer.split(stop_word)[-1].strip()
+                    
+                    if len(answer) > 800:
+                        answer = answer[:800] + "..."
+                    
+                    return answer if answer else "Response generated but empty."
+                else:
+                    return response  # Return error message
+            
+            # Fallback to direct Ollama call
             payload = {
                 "model": self.model_name,
                 "prompt": prompt,

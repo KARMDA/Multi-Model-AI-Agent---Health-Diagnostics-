@@ -27,7 +27,7 @@ def main():
     
     print("🚀 Starting the application...")
     print("📱 The web interface will open at: http://localhost:8501")
-    print("🔄 Press Ctrl+C to stop the application")
+    print(" Press Ctrl+C to stop the application")
     print()
     
     try:
