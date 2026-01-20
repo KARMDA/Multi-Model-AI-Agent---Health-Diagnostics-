@@ -77,6 +77,9 @@ def qualitative_strength(score: Optional[float]) -> str:
         return "moderate"
     return "weak"
 
+def safe_dict(x):
+    return x if isinstance(x, dict) else {}
+
 def run_subprocess(cmd: List[str], cwd: Optional[Path] = None, timeout: Optional[int] = None, env: Optional[Dict[str,str]] = None) -> Tuple[int, str, str]:
     if not cmd:
         return 1, "", "empty command"
@@ -471,6 +474,9 @@ def summarize_model1_abnormal(model1_path: Optional[Path]) -> List[str]:
     return abnormal[:12]
 
 def make_markdown_report(base_name: str, model1_path: Optional[Path], model2_obj: Optional[dict], model3_obj: Optional[dict], user_ctx: Optional[dict], include_details: bool = False) -> str:
+    """
+    Pure function: builds a markdown summary. Must not call Streamlit (st.*) or mutate global state.
+    """
     lines = []
     lines.append(f"# Summary Report — {base_name}")
     lines.append("")
@@ -480,59 +486,68 @@ def make_markdown_report(base_name: str, model1_path: Optional[Path], model2_obj
         lines.append("")
 
     lines.append("## Clinician-style Summary")
-    res = model3_obj.get('result') if isinstance(model3_obj, dict) and 'result' in model3_obj else (model3_obj or {})
-    summary_text = (res.get('summary') if isinstance(res, dict) else "") or "No narrative summary available."
+    # model3_obj might be a dict like {'result': { ... }} or already the inner result
+    res = {}
+    if isinstance(model3_obj, dict) and 'result' in model3_obj:
+        res = safe_dict(model3_obj.get('result'))
+    elif isinstance(model3_obj, dict):
+        res = safe_dict(model3_obj)
+    else:
+        res = {}
+
+    summary_text = res.get('summary') or "No narrative summary available."
     lines.append(summary_text)
     lines.append("")
 
-    if isinstance(res, dict) and res.get('when_to_consult_doctor'):
+    if res.get('when_to_consult_doctor'):
         lines.append("**When to consult a clinician:**")
         lines.append(res.get('when_to_consult_doctor'))
         lines.append("")
 
-    if isinstance(res, dict) and res.get('possible_explanations'):
+    if res.get('possible_explanations'):
         lines.append("### Possible explanations")
         for e in res.get('possible_explanations', [])[:8]:
             lines.append(f"- {e}")
         lines.append("")
-    if isinstance(res, dict) and res.get('lifestyle_guidance'):
+
+    if res.get('lifestyle_guidance'):
         lines.append("### Lifestyle & self-care guidance")
         for e in res.get('lifestyle_guidance', [])[:8]:
             lines.append(f"- {e}")
         lines.append("")
 
-    if model2_obj:
-        md = model2_obj
-        derived = md.get('derived', {}) if isinstance(md, dict) else {}
-        pats = md.get('patterns', {}).get('patterns', {}) if isinstance(md, dict) else {}
-        causes = md.get('probable_causes', {}).get('causes', []) if isinstance(md, dict) else []
+    # Model-2 content (pure rendering to markdown)
+    md = safe_dict(model2_obj)
+    derived = safe_dict(md.get('derived'))
+    patterns_block = safe_dict(md.get('patterns'))
+    patterns = safe_dict(patterns_block.get('patterns'))
+    probable = md.get('probable_causes', {}) if isinstance(md.get('probable_causes', {}), dict) else {}
+    causes = probable.get('causes', []) if isinstance(probable, dict) else []
+    confidence = safe_dict(md.get('confidence'))
 
-        if derived:
-            lines.append("## Key derived metrics (from lab values)")
-            for k, v in list(derived.items())[:8]:
-                lines.append(f"- **{k}**: {v}")
-            lines.append("")
+    if derived:
+        lines.append("## Key derived metrics (from lab values)")
+        for k, v in list(derived.items())[:8]:
+            lines.append(f"- **{k}**: {v}")
+        lines.append("")
 
-        if pats:
-            lines.append("## Detected pattern signals")
-            present = [p for p, info in pats.items() if info.get('present')]
-            if present:
-                for p in present[:10]:
-                    lines.append(f"- {p.replace('_',' ').title()}")
-            else:
-                lines.append("- No strong pathological pattern detected based on available laboratory data.")
-            lines.append("")
+    if patterns:
+        lines.append("## Detected pattern signals")
+        present = [p for p, info in patterns.items() if info.get('present')]
+        if present:
+            for p in present[:10]:
+                lines.append(f"- {p.replace('_',' ').title()}")
+        else:
+            lines.append("- No strong pathological pattern detected based on available laboratory data.")
+        lines.append("")
 
-        if causes:
-            lines.append("## Top probable causes (algorithmic)")
-            for c in causes[:6]:
-                strength = qualitative_strength(c.get("score"))
-                lines.append(
-                    f"- {c.get('cause','?')} — {strength} signal "
-                    f"({', '.join(c.get('support',[])[:3])})"
-                )
-
-            lines.append("")
+    if causes:
+        lines.append("## Top probable causes (algorithmic)")
+        for c in causes[:6]:
+            strength = qualitative_strength(c.get("score"))
+            support = ", ".join(c.get('support', [])[:3]) if isinstance(c.get('support', []), list) else ""
+            lines.append(f"- {c.get('cause','?')} — {strength} signal ({support})")
+        lines.append("")
 
     abnormal = summarize_model1_abnormal(model1_path)
     lines.append("## Notable abnormal parameters (Model-1 quick view)")
@@ -545,8 +560,7 @@ def make_markdown_report(base_name: str, model1_path: Optional[Path], model2_obj
             "see detailed parameter table for context."
         )
 
-
-    if isinstance(res, dict) and res.get('notes'):
+    if res.get('notes'):
         lines.append("## Notes")
         lines.append(res.get('notes'))
         lines.append("")
@@ -574,8 +588,8 @@ def make_markdown_report(base_name: str, model1_path: Optional[Path], model2_obj
             try:
                 lines.append("### Model-2 (compact JSON preview)")
                 mini = {
-                    'derived': model2_obj.get('derived', {}),
-                    'patterns_present': [p for p,info in model2_obj.get('patterns',{}).get('patterns',{}).items() if info.get('present')] if isinstance(model2_obj.get('patterns',{}), dict) else []
+                    'derived': derived,
+                    'patterns_present': [p for p,info in patterns.items() if info.get('present')] if isinstance(patterns, dict) else []
                 }
                 lines.append("```")
                 lines.append(json.dumps(mini, indent=2))
@@ -803,12 +817,20 @@ try:
                 if not batch_mode:
                     try:
                         with st.expander("Model-2 — Patterns & Probable Causes (live)", expanded=True):
-                            md = m2obj or {}
-                            meta = md.get("metadata", {}) if isinstance(md, dict) else {}
+                            md = safe_dict(m2obj)
+                            meta = safe_dict(md.get("metadata"))
+                            derived = safe_dict(md.get("derived"))
+                            patterns_block = safe_dict(md.get("patterns"))
+                            patterns = safe_dict(patterns_block.get("patterns"))
+                            probable = md.get("probable_causes", {}) if isinstance(md.get("probable_causes", {}), dict) else {}
+                            causes = probable.get("causes", []) if isinstance(probable, dict) else []
+                            confidence = safe_dict(md.get("confidence"))
+
                             st.markdown(f"**Report:** {meta.get('base','-')}")
-                            if isinstance(md.get("derived"), dict) and md.get("derived"):
+
+                            # Derived metrics
+                            if derived:
                                 st.subheader("Derived metrics")
-                                derived = md.get("derived", {})
                                 cols = st.columns(3)
                                 i = 0
                                 for k, v in derived.items():
@@ -818,11 +840,12 @@ try:
                                             unsafe_allow_html=True
                                         )
                                     i += 1
-                            pats = md.get("patterns", {}).get("patterns", {})
-                            if pats:
+
+                            # Detected patterns (single canonical rendering)
+                            if patterns:
                                 st.subheader("Detected patterns")
                                 rows = []
-                                for pname, pinfo in pats.items():
+                                for pname, pinfo in patterns.items():
                                     rows.append({
                                         "Pattern": pname,
                                         "Present": (
@@ -835,7 +858,16 @@ try:
                                         "Support": ", ".join(pinfo.get("support", [])[:4])
                                     })
                                 st.table(pd.DataFrame(rows))
-                            causes = md.get("probable_causes", {}).get("causes", [])
+
+                            # Confidence
+                            if confidence:
+                                st.subheader("Confidence")
+                                band = confidence.get("confidence_band", "Moderate")
+                                st.write(f"Confidence: **{band}**")
+                                if confidence.get("explanation"):
+                                    st.caption(confidence.get("explanation"))
+
+                            # Top probable causes
                             if causes:
                                 st.subheader("Top probable causes")
                                 for c in causes[:6]:
@@ -849,15 +881,7 @@ try:
                             if cardio:
                                 st.subheader("Cardiovascular risk")
                                 st.metric("Risk band", cardio.get("band","N/A"), cardio.get("score",""))
-                            conf = md.get("confidence", {})
-                            if conf:
-                                st.subheader("Confidence")
-                                #st.write(f"Score: {conf.get('score')}")
-                                band = conf.get("confidence_band", "Moderate")
-                                st.write(f"Confidence: **{band}**")
 
-                                if conf.get("explanation"):
-                                    st.caption(conf.get("explanation"))
                             if md.get("notes"):
                                 st.subheader("Model-2 notes")
                                 st.write(md.get("notes"))
@@ -964,7 +988,7 @@ try:
 
                     },
                    "confidence_band": (
-                        m2obj.get("confidence", {}).get("confidence_band")
+                        safe_dict(m2obj).get("confidence", {}).get("confidence_band")
                         if isinstance(m2obj, dict) else "Moderate"
                     ),
 
@@ -1032,16 +1056,11 @@ try:
                     except Exception:
                         pass
 
-                # conf_score = None
-                # try:
-                #     conf_score = m2obj.get("confidence", {}).get("score")
-                # except Exception:
-                #     conf_score = None
                 file_status_rows.append({
                     "file": fname,
                     "status": "success",
                     "message": "",
-                    "confidence": m2obj.get("confidence", {}).get("confidence_band", "Moderate")
+                    "confidence": safe_dict(m2obj).get("confidence", {}).get("confidence_band", "Moderate")
                 })
 
             except Exception as e_file:
@@ -1198,13 +1217,21 @@ try:
         st.markdown("**Model-2 — Patterns & Probable Causes**")
         with st.expander("Model-2 summary (detailed)", expanded=False):
             md_path_str = manifest.get("artifacts", {}).get("model2_json")
-            md = safe_json_load(Path(md_path_str)) if md_path_str else {}
-            meta = md.get("metadata", {}) if isinstance(md, dict) else {}
+            md = safe_dict(safe_json_load(Path(md_path_str))) if md_path_str else {}
+
+            meta = safe_dict(md.get("metadata"))
+            derived = safe_dict(md.get("derived"))
+            patterns_block = safe_dict(md.get("patterns"))
+            patterns = safe_dict(patterns_block.get("patterns"))
+            probable = md.get("probable_causes", {}) if isinstance(md.get("probable_causes", {}), dict) else {}
+            causes = probable.get("causes", []) if isinstance(probable, dict) else []
+            confidence = safe_dict(md.get("confidence"))
+
             st.markdown(f"**Report:** {meta.get('base','-')}")
 
-            if isinstance(md.get("derived"), dict) and md.get("derived"):
+            # Derived metrics
+            if derived:
                 st.subheader("Derived metrics")
-                derived = md.get("derived", {})
                 cols = st.columns(3)
                 i = 0
                 for k, v in derived.items():
@@ -1215,11 +1242,11 @@ try:
                         )
                     i += 1
 
-            pats = md.get("patterns", {}).get("patterns", {})
-            if pats:
+            # Detected patterns
+            if patterns:
                 st.subheader("Detected patterns")
                 rows = []
-                for pname, pinfo in pats.items():
+                for pname, pinfo in patterns.items():
                     rows.append({
                         "Pattern": pname,
                         "Present": (
@@ -1227,13 +1254,20 @@ try:
                             else "Subclinical" if pinfo.get("subclinical")
                             else "No"
                         ),
-
                         "Severity": pinfo.get("severity") or pinfo.get("type",""),
                         "Support": ", ".join(pinfo.get("support", [])[:4])
                     })
                 st.table(pd.DataFrame(rows))
 
-            causes = md.get("probable_causes", {}).get("causes", [])
+            # Confidence
+            if confidence:
+                st.subheader("Confidence")
+                band = confidence.get("confidence_band", "Moderate")
+                st.write(f"Confidence: **{band}**")
+                if confidence.get("explanation"):
+                    st.caption(confidence.get("explanation"))
+
+            # Probable causes
             if causes:
                 st.subheader("Top probable causes")
                 for c in causes[:6]:
@@ -1242,17 +1276,6 @@ try:
                         f"- **{c.get('cause','?')}** — {strength} signal "
                         f"({', '.join(c.get('support',[])[:3])})"
                     )
-
-
-            conf = md.get("confidence", {})
-            if conf:
-                st.subheader("Confidence")
-                #st.write(f"Score: {conf.get('score')}")
-                band = conf.get("confidence_band", "Moderate")
-                st.write(f"Confidence: **{band}**")
-
-                if conf.get("explanation"):
-                    st.caption(conf.get("explanation"))
 
             if show_debug:
                 st.subheader("Raw Model-2 JSON")
