@@ -1,0 +1,20 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PDF / OCR tools
+poppler-*/
+*.dll
+*.exe
+
+# Build files
+build/
+dist/
