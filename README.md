@@ -1,161 +1,204 @@
-# Multi-Model-Ai-Agent-For-Automated-Health-Diagnostics
-An Infosys Springboard Virtual Internship project that builds an AI system to extract data from blood reports using OCR, analyze key health parameters, detect abnormalities and patterns, and generate clear, personalized health insights through a multi-model pipeline.
+🧠 Multi-Model AI Agent for Automated Health Diagnostics
+
+An AI-powered blood report analysis system that automatically extracts medical parameters, performs intelligent health risk assessment using multiple models, and generates personalized, explainable health recommendations through an end-to-end pipeline.
+
+🔗 Live App:
+https://health-diagnostics-ai-agent-sneqfjarlutprcqmxfcxwg.streamlit.app/
+
+🔗 Project Resources (Drive):
+https://drive.google.com/drive/folders/1QbfP3IH_mvhwTtLzHgj5jZa02lV2BGL6
+
+📌 Overview
+
+This project implements a Multi-Model AI Agent architecture to analyze blood test reports and deliver meaningful health insights. It supports multiple document formats, applies medical logic with AI reasoning, and produces professional diagnostic reports with appropriate medical disclaimers.
+
+The system is designed for:
+
+Healthcare AI research
+
+Intelligent diagnostics automation
+
+AI-assisted clinical decision support (non-diagnostic)
+
+Academic & portfolio projects
+
+🚀 Key Features
+🔹 Milestone 1 & 2: Data Processing & Analysis
+
+Multi-Format Input Support
+
+PDF, DOCX, TXT, JSON
+
+OCR fallback using EasyOCR for scanned reports
+
+Intelligent Data Extraction
+
+Robust parameter parsing
+
+Unit normalization & validation
+
+Model 1: Medical Classification Engine
+
+Age & gender-aware classification
+
+Labels: Low / Normal / High
+
+Model 2: Health Pattern Recognition
+
+Detects:
+
+Anemia
+
+Metabolic Syndrome
+
+Cardiovascular risk indicators
+
+Rule-based + pattern-driven logic
+
+🔹 Milestone 3: Findings Synthesis & Recommendations
+
+Cross-Model Result Aggregation
+
+Combines outputs from all models
+
+Produces coherent clinical summaries
+
+AI-Powered Recommendations
+
+Personalized:
+
+Diet suggestions
+
+Lifestyle improvements
+
+Medical follow-ups
+
+Uses:
+
+LLMs (Ollama / Groq)
+
+Rule-based fallback for reliability
+
+🔹 Milestone 4: Integration & Reporting
+
+End-to-End Orchestration
+
+From report upload → analysis → recommendations
+
+Professional Report Generation
+
+Exportable Markdown reports
+
+Clear sections: findings, risks, advice
+
+Medical Safety Compliance
+
+Explicit disclaimers
+
+Encourages professional medical consultation
+
+🧩 System Architecture (High-Level)
+User Upload
+   ↓
+Document Parser + OCR
+   ↓
+Medical Parameter Extractor
+   ↓
+Multi-Model Analysis Engine
+   ├── Classification Model
+   ├── Pattern Recognition Model
+   ↓
+Findings Synthesizer
+   ↓
+AI Recommendation Engine
+   ↓
+Professional Health Report
+
+🛠️ Tech Stack
+
+Language: Python
+
+Frontend: Streamlit
+
+OCR: EasyOCR
+
+AI / LLM: Ollama, Groq (optional)
+
+Data Processing: Pandas, NumPy
+
+Document Handling: PDF, DOCX, JSON parsers
+
+⚙️ Installation & Setup
+1️⃣ Install Dependencies
+pip install -r requirements.txt
+
+2️⃣ Run the Application
+Windows
+run.bat
 
 
+or
 
----
+py -m streamlit run app.py
 
-# 🚀 **Multi-Model AI Agent for Automated Health Diagnostics**
+Linux / macOS
+chmod +x run.sh
+./run.sh
 
-An intelligent AI system that **reads blood reports**, analyzes medical patterns, detects risks, and generates **personalized health recommendations**.
-Designed to go beyond simple command execution by **inferring user intent**, even when instructions are vague.
+3️⃣ Open in Browser
+http://localhost:8501
 
----
+📄 Output Report Includes
 
-# 🧠 **Project Overview**
+Extracted blood parameters
 
-```
-   .-----------------------------.
-   |  AI HEALTH DIAGNOSTICS     |
-   |    MULTI–MODEL ENGINE      |
-   '-----------------------------'
-           |   |    |
-      -----'   |    '-----
-     INPUT → ANALYSIS → OUTPUT
-```
+Normal / abnormal classifications
 
-This system processes medical reports in **PDF, scanned image, or JSON format**, extracts parameters through OCR, analyzes them using **three cooperating AI models**, and produces a structured medical-style summary.
+Detected health patterns
 
----
+Risk assessment summary
 
-# ✨ **Key Features**
+Personalized recommendations
 
-```
- .------------------------------------------------.
- |  • Intent Inference                             |
- |  • Multi-Model Medical Analysis                 |
- |  • OCR-Based Data Extraction                    |
- |  • Pattern Detection & Risk Assessment          |
- |  • Personalized Health Recommendations          |
- '------------------------------------------------'
-```
+Medical disclaimer
 
-* Understands user intent, not just literal text
-* Detects abnormal values (high/low/borderline)
-* Identifies combinations (lipid ratios, kidney markers)
-* Generates advice based on findings and user profile
+⚠️ Medical Disclaimer
 
----
+This application does not provide medical diagnoses.
+All insights are for educational and informational purposes only.
+Always consult a qualified healthcare professional for medical advice.
 
-# 🔁 **System Workflow (ASCII Diagram)**
+📂 Project Structure (Simplified)
+├── app.py
+├── models/
+│   ├── classification_model.py
+│   ├── pattern_model.py
+├── ocr/
+│   └── easyocr_handler.py
+├── synthesis/
+│   └── findings_aggregator.py
+├── recommendations/
+│   └── ai_recommender.py
+├── reports/
+│   └── report_generator.py
+├── requirements.txt
+├── run.bat
+├── run.sh
+└── README.md
 
-```
-   .-------------------.       .-------------------.
-   |   1. INPUT        |       |  2. EXTRACTION     |
-   |  (PDF / Image)    | ----> |  OCR + Cleaning    |
-   '-------------------'       '-------------------'
-                |
-                v
-   .-------------------.
-   | 3. AI MODELS      |
-   |-------------------|
-   | Model 1: Values   |
-   | Model 2: Patterns |
-   | Model 3: Context  |
-   '-------------------'
-                |
-                v
-   .-------------------.
-   | 4. SYNTHESIS      |
-   | Full Interpretation|
-   '-------------------'
-                |
-                v
-   .-------------------.
-   | 5. OUTPUT REPORT  |
-   | Summary + Advice  |
-   '-------------------'
-```
+🌟 Future Enhancements
 
----
+Lab-specific reference range adaptation
 
-# 🧬 **Three-Model AI Analysis Engine**
+Doctor-friendly PDF exports
 
-```
-   .--------------------------------------.
-   |   MULTI–MODEL ANALYSIS UNIT          |
-   |--------------------------------------|
-   |  [Model 1] Parameter Interpretation   |
-   |      ↓ Compare with reference ranges  |
-   |--------------------------------------|
-   |  [Model 2] Pattern Recognition        |
-   |      ↓ Ratios, correlations, risks    |
-   |--------------------------------------|
-   |  [Model 3] Contextual Analysis        |
-   |      ↓ Age, gender, lifestyle         |
-   '--------------------------------------'
-```
+Multi-language support
 
-Each model contributes a unique layer of understanding:
+Integration with EHR systems
 
-### ✔ Model 1 – Baseline Interpretation
+Continuous learning from anonymized data
 
-* Detects high, low, or borderline values
-* Uses standard medical ranges
+👤 Author
 
-### ✔ Model 2 – Pattern Recognition & Risks
-
-* Lipid ratios
-* Kidney/liver function indicators
-* Metabolic patterns
-
-### ✔ Model 3 – Optional Contextual Model
-
-* Adjusts interpretation using patient profile
-
----
-
-# 🧩 **Architecture (ASCII Block Diagram)**
-
-```
- .------------------------------------------------------------.
- |                   SYSTEM ARCHITECTURE                      |
- |------------------------------------------------------------|
- | Input Parser | OCR Engine | Validator | Orchestrator       |
- |------------------------------------------------------------|
- | Model 1 | Model 2 | Model 3 | Synthesis Engine             |
- |------------------------------------------------------------|
- | Recommendation Engine | Report Generator                   |
- '------------------------------------------------------------'
-```
-
-Core components include:
-
-* **Input Interface** – PDFs, images, JSON
-* **OCR Extraction Engine** – pulls values + units
-* **Validation Module** – ensures clean, standardized data
-* **AI Models (1–3)** – perform multi-level medical reasoning
-* **Findings Synthesizer** – merges insights
-* **Recommendation Engine** – generates personalized advice
-* **Report Renderer** – formats final output
-
-
-
----
-
-# 📄 **End-to-End Summary (Visual Text Format)**
-
-```
- INPUT → OCR → CLEANING → AI ANALYSIS → FINDINGS → ADVICE → REPORT
-```
-
-### What the system ultimately delivers:
-
-* A readable health summary
-* Highlighted abnormalities
-* Detected medical patterns
-* Personalized lifestyle/diet recommendations
-* Disclaimer-based final report
-
----
-
+Bhanu Satish Puvvala
+AI | Data Science | Healthcare AI Enthusiast
