@@ -1,0 +1,70 @@
+{
+  "Hemoglobin": {
+    "value": 15,
+    "unit": "g/dL",
+    "reference": "13 - 17"
+  },
+  "Total Leukocyte Count": {
+    "value": 5100,
+    "unit": "cumm",
+    "reference": "4800 - 10800"
+  },
+  "Neutrophils": {
+    "value": 79,
+    "unit": "%",
+    "reference": "40 - 80"
+  },
+  "Lymphocytes": {
+    "value": 18,
+    "unit": "%",
+    "reference": "20 - 40",
+    "flag": "Low"
+  },
+  "Eosinophils": {
+    "value": 1,
+    "unit": "%",
+    "reference": "1 - 6"
+  },
+  "Monocytes": {
+    "value": 1,
+    "unit": "%",
+    "reference": "2 - 10",
+    "flag": "Low"
+  },
+  "Basophils": {
+    "value": 1,
+    "unit": "%",
+    "reference": "< 2"
+  },
+  "Platelet Count": {
+    "value": 3.5,
+    "unit": "lakhs/cumm",
+    "reference": "1.5 - 4.1"
+  },
+  "Total RBC Count": {
+    "value": 5,
+    "unit": "million/cumm",
+    "reference": "4.5 - 5.5"
+  },
+  "Hematocrit (HCT)": {
+    "value": 42,
+    "unit": "%",
+    "reference": "40 - 50"
+  },
+  "Mean Corpuscular Volume (MCV)": {
+    "value": 84.0,
+    "unit": "fL",
+    "reference": "83 - 101"
+  },
+  "Mean Cell Haemoglobin (MCH)": {
+    "value": 30.0,
+    "unit": "pg",
+    "reference": "27 - 32"
+  },
+  "Mean Cell Haemoglobin Concentration (MCHC)": {
+    "value": 35.7,
+    "unit": "%",
+    "reference": "31.5 - 34.5",
+    "flag": "High"
+  }
+}
