@@ -17,7 +17,7 @@ from data_processor import (
 st.set_page_config(page_title="AI Health Diagnostics Agent", layout="wide")
 
 st.title("🩸 AI Health Diagnostics Agent")
-st.markdown("**Upload your blood report → Get instant analysis → Chat with your personal AI health assistant (powered by Groq)**")
+st.markdown("**Upload your blood report → Get instant analysis → Chat with your personal AI health assistant **")
 
 # -------------------------------------------------
 # SESSION STATE INIT
@@ -212,7 +212,7 @@ if st.session_state.report_analyzed:
         greeting += ", sir"
     elif context.get("gender") == "Female":
         greeting += ", ma'am"
-    st.caption(f"{greeting}! I'm your caring health assistant powered by Groq AI. Ask me anything about your report.")
+    st.caption(f"{greeting}! I'm your caring health assistant. Ask me anything about your report.")
 
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
@@ -283,4 +283,4 @@ RECOMMENDATIONS:
 else:
     st.info("👆 Upload and analyze a blood report to enable the AI assistant")
 
-st.caption("🔒 Private • Fast • Powered by Groq AI")
+st.caption("🔒 Private • Fast • Ethical")
