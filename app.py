@@ -11,6 +11,67 @@ from io import StringIO
 from graph.run_pipeline import run_full_pipeline
 from graph.rag_pipeline import run_rag_pipeline
 
+
+def llm_safe_answer(state, question):
+    summary = state.synthesis_report or "CBC blood test results available."
+    patterns = ", ".join(state.patterns or [])
+
+    prompt = f"""
+You are a medical assistant.
+You must follow these rules STRICTLY:
+
+- DO NOT diagnose diseases
+- DO NOT prescribe medications or dosages
+- DO NOT replace a doctor
+- Provide general, educational guidance only
+- Always mention consulting a healthcare professional when needed
+
+Patient CBC Summary:
+{summary}
+
+Detected Patterns:
+{patterns if patterns else "No abnormal patterns detected"}
+
+User Question:
+{question}
+
+Respond in a clear, calm, educational tone.
+"""
+
+    try:
+        return run_rag_pipeline(
+            prompt,
+            state.rag_collection_name,
+            st.session_state.session_id,
+            report_context=state
+        )
+    except Exception:
+        return (
+            "I can explain general concepts related to your blood report, "
+            "but I’m unable to answer this question precisely."
+        )
+
+def medicine_guardrail(question: str):
+    if not question or not isinstance(question, str):
+        return None
+
+    q = question.lower()
+
+    blocked_words = [
+        "medicine", "medication", "tablet", "drug",
+        "dose", "dosage", "mg", "antibiotic",
+        "paracetamol", "ibuprofen", "insulin"
+    ]
+
+    if any(word in q for word in blocked_words):
+        return (
+            "I cannot recommend specific medicines or dosages. "
+            "Please consult a qualified healthcare professional for medication advice."
+        )
+
+    return None
+
+
 # ... (rest of imports are fine, but ensure rag_pipeline is used) is a placeholder comment from previous edit.
 # We need to ensure the imports are actually valid python.
 
@@ -296,42 +357,64 @@ if uploaded:
     if result.rag_collection_name:
         st.divider()
         st.subheader("💬 Ask AI Assistant")
-        
-        # Initialize chat history
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
 
-        if "session_id" not in st.session_state:
-            st.session_state.session_id = str(uuid.uuid4())
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-        # Display chat messages from history on app rerun
-        # Sync with backend history for this session if needed, or rely on local state
-        # For simplicity, we trust the local state history which mirrors the backend
-        
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
 
-        # React to user input
-        if prompt := st.chat_input("Ask a question about this report..."):
-            # Display user message in chat message container
-            st.chat_message("user").markdown(prompt)
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            
-            # Get response
-            with st.spinner("Thinking..."):
+    # Show previous messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # User input
+    if prompt := st.chat_input("Ask anything related to your blood report"):
+        # Store user message
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append(
+            {"role": "user", "content": prompt}
+        )
+
+        with st.spinner("Thinking..."):
+
+            # 🔐 Medicine-only guardrail
+            blocked = medicine_guardrail(prompt)
+
+            if blocked:
+                st.chat_message("assistant").markdown(blocked)
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": blocked}
+                )
+
+            else:
                 try:
                     answer = run_rag_pipeline(
-                        prompt, 
-                        result.rag_collection_name, 
+                        prompt,
+                        result.rag_collection_name,
                         st.session_state.session_id,
                         report_context=result
                     )
-                    # Display assistant response in chat message container
-                    with st.chat_message("assistant"):
-                        st.markdown(answer)
-                    # Add assistant response to chat history
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
-                except Exception as e:
-                    st.error(f"Error generating answer: {e}")
+
+                    # Safety fallback
+                    if not answer or not isinstance(answer, str):
+                        answer = (
+                            "I can provide general guidance based on your blood report, "
+                            "but I couldn’t generate a detailed response."
+                        )
+
+                    st.chat_message("assistant").markdown(answer)
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": answer}
+                    )
+
+                except Exception:
+                    fallback = (
+                        "I can provide general educational guidance based on your blood report, "
+                        "but I’m unable to answer this question precisely."
+                    )
+                    st.chat_message("assistant").markdown(fallback)
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": fallback}
+                    )
