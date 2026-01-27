@@ -98,7 +98,81 @@ PATTERN_RULES = {
         "conditions_any": {"Cholesterol": "High", "Glucose": "High", "Hemoglobin": "Low"},
         "risk_score_base": 0.85,
         "description": "Combination of high cholesterol/glucose and low hemoglobin significantly raises heart disease risk (AHA/PMC studies)."
-    }
+    },
+    "Prediabetes": {
+        "conditions_all": {"Fasting Glucose": "High"},
+        "risk_score_base": 0.6,
+        "description": "Elevated fasting glucose suggests prediabetic state."
+    },
+
+    "Diabetes Suspected": {
+        "conditions_all": {"HbA1c": "High"},
+        "risk_score_base": 0.8,
+        "description": "High HbA1c indicates poor long-term glucose control."
+    },
+    "Hypercholesterolemia": {
+        "conditions_any": {"Total Cholesterol": "High", "LDL": "High"},
+        "risk_score_base": 0.7,
+        "description": "Elevated cholesterol levels increase cardiovascular risk."
+    },
+
+    "Low HDL Risk": {
+        "conditions_all": {"HDL": "Low"},
+        "risk_score_base": 0.6,
+        "description": "Low HDL reduces protective effect against heart disease."
+    },
+    "Renal Dysfunction Suspected": {
+        "conditions_any": {"Creatinine": "High", "Urea": "High"},
+        "risk_score_base": 0.8,
+        "description": "Elevated kidney markers suggest impaired renal function."
+    },
+    "Hepatic Injury Pattern": {
+        "conditions_any": {"SGOT": "High", "SGPT": "High"},
+        "risk_score_base": 0.75,
+        "description": "Elevated liver enzymes suggest liver inflammation or injury."
+    },
+
+    "Cholestasis Pattern": {
+        "conditions_all": {"ALP": "High", "Total Bilirubin": "High"},
+        "risk_score_base": 0.7,
+        "description": "Raised ALP and bilirubin may indicate bile flow obstruction."
+    },
+    "Hypothyroidism Suspected": {
+        "conditions_all": {"TSH": "High"},
+        "risk_score_base": 0.75,
+        "description": "Elevated TSH suggests reduced thyroid hormone production."
+    },
+
+    "Hyperthyroidism Suspected": {
+        "conditions_all": {"TSH": "Low"},
+        "risk_score_base": 0.75,
+        "description": "Low TSH may indicate excess thyroid hormone levels."
+    },
+    "Hyponatremia": {
+        "conditions_all": {"Sodium": "Low"},
+        "risk_score_base": 0.7,
+        "description": "Low sodium levels may affect neurological and cardiac function."
+    },
+
+    "Hyperkalemia": {
+        "conditions_all": {"Potassium": "High"},
+        "risk_score_base": 0.8,
+        "description": "High potassium can cause dangerous heart rhythm disturbances."
+    },
+    "Iron Deficiency Pattern": {
+        "conditions_any": {"Serum Iron": "Low", "Ferritin": "Low"},
+        "risk_score_base": 0.75,
+        "description": "Low iron stores suggest iron deficiency anemia risk."
+    },
+
+    "Hypercalcemia": {
+        "conditions_all": {"Calcium": "High"},
+        "risk_score_base": 0.7,
+        "description": "Elevated calcium may indicate parathyroid or metabolic disorder."
+    },
+    
+
+
 }
 
 def model_2_pattern_risk_analysis(classified_data):
