@@ -1675,6 +1675,7 @@ if 'current_reports' not in st.session_state:
     st.session_state.current_reports = {}
 if 'validated_data' not in st.session_state:
     st.session_state.validated_data = {}
+# Initialize session state for enhanced chat
 if 'chat_messages' not in st.session_state:
     st.session_state.chat_messages = []
 
@@ -2485,42 +2486,263 @@ if uploaded_file is not None:
 
 
     # ============================================
-    # CHAT INTERFACE
+    # ENHANCED CHAT INTERFACE
     # ============================================
     st.subheader("💬 AI Medical Assistant")
     
-    # Display chat messages
-    for message in st.session_state.chat_messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    # Initialize chat with welcome message if empty
+    if not st.session_state.chat_messages:
+        welcome_msg = """**Hello! I'm your AI Medical Assistant.**
+
+I can help you understand your blood report analysis using only your actual medical data.
+
+**What I can help with:**
+• 🔬 Test results and their meanings
+• ⚠️ Risk levels and health patterns  
+• 💡 Lifestyle recommendations
+• 👤 Age/gender context in your analysis
+• 🔍 Abnormal findings explanations
+
+**Important:** I only use information from your blood report analysis - no external medical knowledge or diagnosis."""
+        
+        st.session_state.chat_messages.append({
+            "role": "assistant",
+            "content": welcome_msg,
+            "timestamp": time.time(),
+            "type": "welcome"
+        })
     
-    # Chat input
-    if prompt := st.chat_input("Ask about your blood report..."):
-        st.session_state.chat_messages.append({"role": "user", "content": prompt})
+    # Enhanced chat display with custom styling
+    st.markdown("""
+    <div style="
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 10px;
+        background: linear-gradient(to bottom, #fafafa, #ffffff);
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+    ">
+    """, unsafe_allow_html=True)
+    
+    # Display chat messages with enhanced styling
+    for i, message in enumerate(st.session_state.chat_messages):
+        timestamp = datetime.fromtimestamp(message.get("timestamp", time.time())).strftime("%H:%M")
         
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        with st.chat_message("assistant"):
-            with st.spinner("🤖 Thinking..."):
+        if message["role"] == "user":
+            # User message (right-aligned, blue bubble)
+            st.markdown(f"""
+            <div style="display: flex; justify-content: flex-end; margin: 15px 0;">
+                <div style="
+                    background: linear-gradient(135deg, #0084ff, #0066cc);
+                    color: white;
+                    padding: 12px 18px;
+                    border-radius: 20px 20px 5px 20px;
+                    max-width: 70%;
+                    word-wrap: break-word;
+                    box-shadow: 0 2px 10px rgba(0, 132, 255, 0.3);
+                    font-size: 14px;
+                    line-height: 1.4;
+                ">
+                    {message["content"]}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Assistant message (left-aligned, styled bubble)
+            is_unavailable = "not available in your blood report analysis" in message["content"]
+            bubble_color = "#fff3cd" if is_unavailable else "#f8f9fa"
+            border_color = "#ffeaa7" if is_unavailable else "#e9ecef"
+            
+            st.markdown(f"""
+            <div style="display: flex; justify-content: flex-start; margin: 15px 0;">
+                <div style="
+                    background-color: {bubble_color};
+                    color: #333;
+                    padding: 12px 18px;
+                    border-radius: 20px 20px 20px 5px;
+                    max-width: 85%;
+                    word-wrap: break-word;
+                    border: 1px solid {border_color};
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    font-size: 14px;
+                    line-height: 1.5;
+                ">
+                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 600; color: #1f77b4; font-size: 12px;">
+                            🤖 AI Medical Assistant
+                        </span>
+                        <span style="color: #666; font-size: 11px; margin-left: auto;">
+                            {timestamp}
+                        </span>
+                    </div>
+                    <div style="white-space: pre-wrap;">
+                        {message["content"]}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Quick action buttons
+    st.markdown("**💡 Quick Questions:**")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    quick_questions = [
+        ("📊 Overall Status", "What is my overall health status based on the analysis?"),
+        ("⚠️ Risk Assessment", "What is my risk level and what does it mean?"),
+        ("💡 Recommendations", "What lifestyle recommendations do you have for me?"),
+        ("🔬 Abnormal Results", "Which of my test results are abnormal and why?")
+    ]
+    
+    for i, (button_text, question) in enumerate(quick_questions):
+        with [col1, col2, col3, col4][i]:
+            if st.button(button_text, key=f"quick_{i}", use_container_width=True):
+                # Add user message
+                st.session_state.chat_messages.append({
+                    "role": "user",
+                    "content": question,
+                    "timestamp": time.time(),
+                    "type": "question"
+                })
+                
+                # Generate AI response
                 try:
-                    # Pass the actual extracted data to AI agent
                     report_data = st.session_state.validated_data
-                    
-                    # Generate personalized response based on extracted data
-                    answer = generate_personalized_response(prompt, report_data)
-                    
+                    answer = generate_personalized_response(question, report_data)
                 except Exception as e:
                     answer = "I'm here to help with blood report analysis. Please try asking another question."
                 
-                st.markdown(answer)
-        
-        st.session_state.chat_messages.append({"role": "assistant", "content": answer})
+                # Add assistant response
+                st.session_state.chat_messages.append({
+                    "role": "assistant",
+                    "content": answer,
+                    "timestamp": time.time(),
+                    "type": "response"
+                })
+                st.rerun()
     
-    # Clear chat button
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.chat_messages = []
-        st.rerun()
+    st.markdown("---")
+    
+    # Enhanced chat input form
+    with st.form(key="chat_form", clear_on_submit=True):
+        col1, col2 = st.columns([5, 1])
+        
+        with col1:
+            user_input = st.text_input(
+                "Message",
+                placeholder="Ask me about your blood report analysis...",
+                label_visibility="collapsed",
+                key="chat_input"
+            )
+        
+        with col2:
+            send_button = st.form_submit_button(
+                "Send", 
+                use_container_width=True,
+                type="primary"
+            )
+        
+        if send_button and user_input.strip():
+            # Add user message
+            st.session_state.chat_messages.append({
+                "role": "user",
+                "content": user_input.strip(),
+                "timestamp": time.time(),
+                "type": "question"
+            })
+            
+            # Generate AI response with progress indicator
+            progress_placeholder = st.empty()
+            progress_placeholder.info("⚡ Processing your question...")
+            
+            try:
+                report_data = st.session_state.validated_data
+                answer = generate_personalized_response(user_input.strip(), report_data)
+            except Exception as e:
+                answer = f"Error processing question: {str(e)}"
+            finally:
+                progress_placeholder.empty()
+            
+            # Add assistant response
+            st.session_state.chat_messages.append({
+                "role": "assistant",
+                "content": answer,
+                "timestamp": time.time(),
+                "type": "response"
+            })
+            st.rerun()
+    
+    # Enhanced chat controls
+    st.markdown("---")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("🗑️ Clear Chat", key="clear_chat"):
+            st.session_state.chat_messages = []
+            st.rerun()
+    
+    with col2:
+        if st.button("📋 Available Topics", key="show_topics"):
+            # Get available topics based on current analysis
+            topics = []
+            if st.session_state.validated_data:
+                abnormal_params = [param for param, info in st.session_state.validated_data.items() 
+                                 if info.get('status') in ['LOW', 'HIGH']]
+                if abnormal_params:
+                    topics.extend([f"• {param} levels and implications" for param in abnormal_params[:3]])
+                
+                topics.extend([
+                    "• Overall health assessment",
+                    "• Risk factors and prevention",
+                    "• Dietary recommendations",
+                    "• Exercise guidelines",
+                    "• Lifestyle modifications"
+                ])
+            else:
+                topics = ["• Upload a blood report first to get personalized topics"]
+            
+            topics_text = "**Here's what I can help you with based on your analysis:**\n\n"
+            topics_text += "\n".join(topics)
+            topics_text += "\n\n*Feel free to ask specific questions about any of these areas!*"
+            
+            st.session_state.chat_messages.append({
+                "role": "assistant",
+                "content": topics_text,
+                "timestamp": time.time(),
+                "type": "topics"
+            })
+            st.rerun()
+    
+    with col3:
+        if st.button("💾 Export Chat", key="export_chat"):
+            if st.session_state.chat_messages:
+                # Generate chat export
+                export_text = "Blood Report Q&A Chat Export\n"
+                export_text += "=" * 40 + "\n"
+                export_text += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                
+                for message in st.session_state.chat_messages:
+                    timestamp = datetime.fromtimestamp(message.get("timestamp", time.time())).strftime("%H:%M:%S")
+                    role = "You" if message["role"] == "user" else "AI Assistant"
+                    export_text += f"[{timestamp}] {role}:\n{message['content']}\n\n"
+                
+                export_text += "\nDisclaimer: This information is for educational purposes only and is not a substitute for professional medical advice."
+                
+                # Provide download button
+                st.download_button(
+                    label="📥 Download Chat History",
+                    data=export_text,
+                    file_name=f"medical_chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    key="download_chat"
+                )
+            else:
+                st.warning("No chat history to export")
+    
+    with col4:
+        st.markdown("*💡 Ask specific questions for detailed explanations*")
 
 else:
     st.info("👆 Upload a blood report to begin analysis")

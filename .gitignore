@@ -16,6 +16,7 @@ ENV/
 # IDE
 .vscode/
 .idea/
+.kiro/
 
 # Environment files (contains secrets)
 .env

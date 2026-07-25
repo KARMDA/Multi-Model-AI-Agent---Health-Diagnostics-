@@ -265,7 +265,7 @@ class EnhancedAIAgent:
         
         # Food/diet recommendations
         if any(word in message_lower for word in ['food', 'diet', 'eat', 'nutrition', 'meal']):
-            return """🍎 **General Healthy Eating Guidelines:**
+            return """ **General Healthy Eating Guidelines:**
 
 • **Fruits & Vegetables**: Aim for 5+ servings daily
 • **Whole Grains**: Choose brown rice, oats, whole wheat
