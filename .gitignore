@@ -44,3 +44,4 @@ temp/
 
 # Kiro
 .kiro/
+.agents/
