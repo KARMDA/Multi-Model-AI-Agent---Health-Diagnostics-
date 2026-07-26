@@ -1,7 +1,7 @@
-FROM python:3.9
+FROM python:3.11-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# ── System dependencies (Tesseract + Poppler for PDF) ──────
+RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-eng \
     poppler-utils \
@@ -9,22 +9,28 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements and install Python dependencies
+# ── Python dependencies ────────────────────────────────────
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# ── Application code ───────────────────────────────────────
+COPY backend/ backend/
+COPY frontend/ frontend/
 
-# Set environment variables for HF Spaces
-ENV LLM_PROVIDER_PRIORITY=hf_only
-ENV OCR_PROVIDER_PRIORITY=api_first
+# ── Startup script ─────────────────────────────────────────
+# Runs both FastAPI (port 8000) and Streamlit (port 7860)
+COPY start.sh .
+RUN chmod +x start.sh
 
-# Expose port
+# ── Environment defaults for HF Spaces ────────────────────
+ENV API_HOST=0.0.0.0
+ENV API_PORT=8000
+ENV API_BASE_URL=http://localhost:8000/api
+ENV CORS_ORIGINS=*
+ENV DEBUG=false
+
 EXPOSE 7860
 
-# Run the application
-CMD ["streamlit", "run", "app.py", "--server.port=7860", "--server.address=0.0.0.0"]
+CMD ["./start.sh"]
