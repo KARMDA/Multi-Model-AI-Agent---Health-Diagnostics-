@@ -29,6 +29,7 @@ def init_supabase():
         return None
 
     try:
+        # pyrefly: ignore [missing-import]
         from supabase import create_client
         _client = create_client(settings.supabase_url, settings.supabase_key)
         logger.info(f"✓ Supabase connected: {settings.supabase_url}")

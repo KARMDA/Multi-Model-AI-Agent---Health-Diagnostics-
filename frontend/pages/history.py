@@ -2,6 +2,7 @@
 History Page — view past report analyses.
 """
 
+# pyrefly: ignore [missing-import]
 import streamlit as st
 import api_client
 

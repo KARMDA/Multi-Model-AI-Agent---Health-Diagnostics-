@@ -45,3 +45,4 @@ temp/
 # Kiro
 .kiro/
 .agents/
+.docs/

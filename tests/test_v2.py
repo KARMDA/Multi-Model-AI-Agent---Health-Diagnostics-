@@ -6,6 +6,7 @@ Uses pytest. Tests are organized by layer:
   3. API (FastAPI endpoints via TestClient)
 """
 
+# pyrefly: ignore [missing-import]
 import pytest
 import json
 from unittest.mock import AsyncMock, MagicMock, patch

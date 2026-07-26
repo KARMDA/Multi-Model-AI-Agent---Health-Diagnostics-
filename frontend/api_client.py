@@ -9,7 +9,7 @@ import httpx
 import logging
 from typing import Optional, Dict, Any, List
 
-from .config import API_BASE_URL
+from config import API_BASE_URL
 
 logger = logging.getLogger(__name__)
 
